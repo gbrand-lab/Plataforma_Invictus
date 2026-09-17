@@ -7,6 +7,7 @@ import { ArrowRight, Heart, Menu, X } from 'lucide-react';
 import { cx } from '@/lib/format';
 import { ATALHOS } from '@/lib/urlFiltros';
 import { useFavoritosCtx } from '@/lib/favoritos-context';
+import { Logo } from './Logo';
 import { WhatsAppCTA } from './WhatsAppCTA';
 
 const NAV = [
@@ -48,11 +49,8 @@ export function Header() {
       )}
     >
       <div className="mx-auto flex h-full max-w-[1240px] items-center gap-6 px-5 sm:px-7">
-        <Link href="/" className="flex shrink-0 items-baseline gap-2" aria-label="Invictus — página inicial">
-          <span className="font-display text-[21px] font-[560] leading-none tracking-[0.14em] text-ink">INVICTUS</span>
-          <span className="hidden text-[9.5px] font-semibold uppercase tracking-[0.22em] text-brand sm:block">
-            Imobiliária
-          </span>
+        <Link href="/" aria-label="Invictus — página inicial">
+          <Logo />
         </Link>
 
         <nav className="ml-auto hidden items-center gap-7 lg:flex">
@@ -108,7 +106,7 @@ export function Header() {
           <div className="absolute inset-0 bg-ink/45" onClick={() => setMenu(false)} />
           <div className="sheet-in absolute inset-x-0 top-0 rounded-b-2xl bg-white p-5 pb-7">
             <div className="mb-6 flex items-center justify-between">
-              <span className="font-display text-[20px] tracking-[0.14em] text-ink">INVICTUS</span>
+              <Logo />
               <button
                 type="button"
                 onClick={() => setMenu(false)}

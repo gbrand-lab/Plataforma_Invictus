@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Campo, inputCls } from '@/components/ui';
+import { Logo } from '@/components/Logo';
 
 export default function CorretorLoginPage() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export default function CorretorLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-ground px-5">
       <div className="w-full max-w-[380px] rounded-2xl border border-line bg-white p-7 shadow-float">
+        <Logo className="mb-4" />
         <h1 className="font-display text-[24px] font-[440] tracking-[-0.015em] text-ink">Área do corretor</h1>
         <p className="mt-1 text-[13.5px] text-muted">Entre com sua conta para gerenciar seus imóveis.</p>
 

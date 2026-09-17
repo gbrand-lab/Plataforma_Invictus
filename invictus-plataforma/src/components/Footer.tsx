@@ -3,6 +3,7 @@ import { Instagram, Mail, MapPin, Phone } from 'lucide-react';
 import { CONFIG, whatsappUrl } from '@/lib/config';
 import { ATALHOS } from '@/lib/urlFiltros';
 import { WhatsAppIcon } from './icons/WhatsAppIcon';
+import { Logo } from './Logo';
 
 const COLUNAS = [
   {
@@ -38,7 +39,7 @@ export function Footer() {
       <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-7">
         <div className="grid grid-cols-2 gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="col-span-2 lg:col-span-1">
-            <span className="font-display text-[22px] font-[560] tracking-[0.14em] text-ink">INVICTUS</span>
+            <Logo textClassName="text-[22px]" />
             <p className="mt-3 max-w-[34ch] text-[14px] leading-relaxed text-ink2">
               Conectando pessoas às melhores oportunidades imobiliárias.
             </p>

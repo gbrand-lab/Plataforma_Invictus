@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Campo, inputCls } from '@/components/ui';
+import { Logo } from '@/components/Logo';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-ground px-5">
       <div className="w-full max-w-[380px] rounded-2xl border border-line bg-white p-7 shadow-float">
+        <Logo className="mb-4" />
         <h1 className="font-display text-[24px] font-[440] tracking-[-0.015em] text-ink">Painel Invictus</h1>
         <p className="mt-1 text-[13.5px] text-muted">Entre com sua conta de administrador.</p>
 

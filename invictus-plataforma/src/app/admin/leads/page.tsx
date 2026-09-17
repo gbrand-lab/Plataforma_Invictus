@@ -35,7 +35,7 @@ export default async function LeadsPage() {
             <p className="text-[14px] text-muted">Nenhum lead capturado ainda.</p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+          <div className="overflow-x-auto rounded-2xl border border-line bg-white">
             <table className="w-full text-left text-[13.5px]">
               <thead>
                 <tr className="border-b border-line bg-wash/40 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
