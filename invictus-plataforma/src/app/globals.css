@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ground text-ink antialiased;
+  }
+
+  ::selection {
+    background: rgba(237, 106, 31, 0.18);
+  }
+
+  /* Foco visível consistente para navegação por teclado */
+  :focus-visible {
+    outline: 2px solid #ed6a1f;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------- microinterações */
+
+/* Entrada das seções — o estado de repouso já é visível na primeira dobra */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 460ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    transform 460ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.reveal-on {
+  opacity: 1;
+  transform: none;
+}
+
+.skel {
+  background: linear-gradient(100deg, #efede8 30%, #f7f5f1 50%, #efede8 70%);
+  background-size: 240% 100%;
+  animation: skel 1.25s ease-in-out infinite;
+}
+@keyframes skel {
+  0% {
+    background-position: 140% 0;
+  }
+  100% {
+    background-position: -40% 0;
+  }
+}
+
+.fav-pulse {
+  animation: favp 420ms cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+@keyframes favp {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.toast-in {
+  animation: toastin 260ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+@keyframes toastin {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.sheet-in {
+  animation: sheetin 280ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+@keyframes sheetin {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.drawer-in {
+  animation: drawerin 300ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+@keyframes drawerin {
+  from {
+    opacity: 0.4;
+    transform: translateX(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
