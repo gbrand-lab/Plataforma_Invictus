@@ -9,6 +9,14 @@ import { selectCls, selectStyle } from './ui';
 export const CHIP =
   'inline-flex h-9 items-center rounded-lg border px-3 text-[13.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40';
 
+/** Só pra imóvel na planta: filtra pelo teto de preço a partir da renda que o comprador informa. */
+const FAIXAS_RENDA: { label: string; precoMax: number | '' }[] = [
+  { label: 'Até R$ 3.000', precoMax: 260000 },
+  { label: 'Até R$ 5.500', precoMax: 320000 },
+  { label: 'Até R$ 9.000', precoMax: 400000 },
+  { label: 'Acima de R$ 10.000', precoMax: '' },
+];
+
 interface FilterBarProps {
   filtro: Filtro;
   set: (patch: Partial<Filtro>) => void;
@@ -138,6 +146,36 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
           </select>
         </div>
       </div>
+
+      {filtro.finalidade === 'venda' && !filtro.naChave ? (
+        <div className="border-t border-line/70">
+          <div className="mx-auto max-w-[1240px] px-5 pt-2.5 sm:px-7">
+            <p className="text-[13px] font-medium text-ink">
+              Vamos achar o imóvel que se encaixa na sua realidade.
+            </p>
+          </div>
+          <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-2 px-5 pb-2.5 pt-1.5 sm:px-7">
+            <span className="text-[12.5px] font-medium text-ink2">Renda mensal:</span>
+            {FAIXAS_RENDA.map((f) => (
+              <button
+                key={f.label}
+                type="button"
+                onClick={() => set({ precoMin: '', precoMax: f.precoMax })}
+                aria-pressed={filtro.precoMax === f.precoMax}
+                className={cx(
+                  CHIP,
+                  'h-8',
+                  filtro.precoMax === f.precoMax
+                    ? 'border-brand bg-wash text-brandDeep'
+                    : 'border-line bg-white text-ink2 hover:border-ink/30',
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

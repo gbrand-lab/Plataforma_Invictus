@@ -86,12 +86,12 @@ export default function CorretorCadastroPage() {
             />
           </Campo>
 
-          <Campo label="Senha" htmlFor="senha" hint="Mínimo de 6 caracteres.">
+          <Campo label="Senha" htmlFor="senha" hint="Mínimo de 10 caracteres.">
             <input
               id="senha"
               type="password"
               required
-              minLength={6}
+              minLength={10}
               autoComplete="new-password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}

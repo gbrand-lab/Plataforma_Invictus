@@ -1,7 +1,11 @@
+from pathlib import Path
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _PLACEHOLDERS = ("teste", "troque", "changeme", "secret", "senha")
+
+_ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 
 
 class Settings(BaseSettings):
@@ -10,7 +14,13 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 1440
     cors_origins: str = "http://localhost:3000"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    # Fotos de imóveis: sem isso, upload cai no disco local (uploads/) — ok em dev,
+    # mas some a cada deploy no Railway. Preencher no .env de produção.
+    cloudinary_cloud_name: str | None = None
+    cloudinary_api_key: str | None = None
+    cloudinary_api_secret: str | None = None
+
+    model_config = SettingsConfigDict(env_file=_ENV_FILE, env_file_encoding="utf-8")
 
     @field_validator("jwt_secret")
     @classmethod
@@ -25,6 +35,10 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def cloudinary_configurado(self) -> bool:
+        return bool(self.cloudinary_cloud_name and self.cloudinary_api_key and self.cloudinary_api_secret)
 
 
 settings = Settings()

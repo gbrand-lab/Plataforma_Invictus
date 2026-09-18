@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -7,9 +10,12 @@ from slowapi.middleware import SlowAPIMiddleware
 from .config import settings
 from .database import Base, engine
 from .limiter import limiter
-from .routers import auth, config, imoveis, leads, usuarios
+from .routers import auth, config, imoveis, leads, uploads, usuarios
 
 Base.metadata.create_all(bind=engine)
+
+UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="Invictus API", version="0.1.0")
 
@@ -30,6 +36,9 @@ app.include_router(imoveis.router)
 app.include_router(usuarios.router)
 app.include_router(config.router)
 app.include_router(leads.router)
+app.include_router(uploads.router)
+
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 
 @app.get("/health")

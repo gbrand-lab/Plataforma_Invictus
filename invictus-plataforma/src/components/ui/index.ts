@@ -3,6 +3,8 @@ export type { BtnSize, BtnVariant } from './Btn';
 export { Tag } from './Tag';
 export type { TagTone } from './Tag';
 export { Campo, inputCls, selectCls, selectStyle } from './Fields';
+export { ImageUploader } from './ImageUploader';
+export { VideoUploader } from './VideoUploader';
 export { Foto } from './Foto';
 export { Reveal } from './Reveal';
 export { CardSkeleton, GridSkeleton } from './Skeleton';

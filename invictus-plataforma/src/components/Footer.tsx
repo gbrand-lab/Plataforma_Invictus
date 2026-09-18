@@ -4,16 +4,17 @@ import { CONFIG, whatsappUrl } from '@/lib/config';
 import { ATALHOS } from '@/lib/urlFiltros';
 import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { Logo } from './Logo';
+import { AbrirLeadDrawerButton } from './AbrirLeadDrawerButton';
 
 const COLUNAS = [
   {
     titulo: 'Imóveis',
     itens: [
       { label: 'Menu', href: ATALHOS.menu },
-      { label: 'Comprar', href: ATALHOS.comprar },
+      { label: 'Na planta/construção', href: ATALHOS.planta },
+      { label: 'Pronto para morar', href: ATALHOS.pronto },
+      { label: 'Aluguel', href: ATALHOS.alugar },
       { label: 'Repasse de chave', href: ATALHOS.repasse },
-      { label: 'Alugar', href: ATALHOS.alugar },
-      { label: 'Na Chave', href: ATALHOS.naChave },
     ],
   },
   {
@@ -39,7 +40,7 @@ export function Footer() {
       <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-7">
         <div className="grid grid-cols-2 gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="col-span-2 lg:col-span-1">
-            <Logo textClassName="text-[22px]" />
+            <Logo />
             <p className="mt-3 max-w-[34ch] text-[14px] leading-relaxed text-ink2">
               Conectando pessoas às melhores oportunidades imobiliárias.
             </p>
@@ -48,6 +49,8 @@ export function Footer() {
               {CONFIG.endereco}
             </p>
             <p className="mt-2 text-[13px] text-muted">{CONFIG.creci}</p>
+
+            <AbrirLeadDrawerButton className="mt-5 inline-flex h-10 items-center gap-2 rounded-xl border border-line px-4 text-[13.5px] font-medium text-ink2 transition-colors hover:border-ink/30 hover:text-ink" />
           </div>
 
           {COLUNAS.map((col) => (

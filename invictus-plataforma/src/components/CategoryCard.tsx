@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { scene, type SceneName } from '@/lib/scenes';
 import { ATALHOS } from '@/lib/urlFiltros';
 import { Foto, Reveal, SectionHead } from './ui';
+import { AbrirLeadDrawerButton } from './AbrirLeadDrawerButton';
 
 interface Categoria {
   id: string;
@@ -18,23 +19,33 @@ interface Categoria {
 
 const CATEGORIAS: Categoria[] = [
   {
-    id: 'comprar',
-    titulo: 'Comprar',
-    texto: 'Imóveis disponíveis para venda.',
+    id: 'planta',
+    titulo: 'Na planta/construção',
+    texto: 'Imóvel na planta/construção.',
     cta: 'Ver imóveis',
-    href: ATALHOS.comprar,
+    href: ATALHOS.planta,
     cena: 'facade',
     seed: 205,
     Icone: Building2,
   },
   {
-    id: 'alugar',
-    titulo: 'Alugar',
+    id: 'pronto',
+    titulo: 'Pronto para morar',
+    texto: 'Imóvel pronto para morar.',
+    cta: 'Ver imóveis',
+    href: ATALHOS.pronto,
+    cena: 'house',
+    seed: 211,
+    Icone: KeyRound,
+  },
+  {
+    id: 'aluguel',
+    titulo: 'Aluguel',
     texto: 'Encontre seu próximo imóvel.',
     cta: 'Ver imóveis',
     href: ATALHOS.alugar,
     cena: 'tower',
-    seed: 211,
+    seed: 217,
     Icone: Home,
   },
   {
@@ -44,18 +55,8 @@ const CATEGORIAS: Categoria[] = [
     cta: 'Ver repasses',
     href: ATALHOS.repasse,
     cena: 'interior',
-    seed: 217,
-    Icone: Repeat,
-  },
-  {
-    id: 'na-chave',
-    titulo: 'Na Chave',
-    texto: 'Imóveis prontos para morar.',
-    cta: 'Ver oportunidades',
-    href: ATALHOS.naChave,
-    cena: 'house',
     seed: 223,
-    Icone: KeyRound,
+    Icone: Repeat,
   },
 ];
 
@@ -106,6 +107,10 @@ export function CategoryCards() {
           </Reveal>
         ))}
       </div>
+
+      <Reveal delay={CATEGORIAS.length * 60}>
+        <AbrirLeadDrawerButton className="mx-auto mt-6 flex h-10 items-center gap-2 rounded-xl border border-line px-4 text-[13.5px] font-medium text-ink2 transition-colors hover:border-ink/30 hover:text-ink" />
+      </Reveal>
     </section>
   );
 }

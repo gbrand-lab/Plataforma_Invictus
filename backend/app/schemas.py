@@ -86,6 +86,8 @@ class ImovelBase(BaseModel):
 class ImovelCreate(ImovelBase):
     ref: str | None = None
     slug: str | None = None
+    # Preenchido automaticamente pelo backend a partir de quem está logado — ver routers/imoveis.py.
+    corretor: str | None = None
 
 
 class ImovelUpdate(BaseModel):

@@ -11,6 +11,7 @@ import { filtroFromSearchParams, searchParamsFromFiltro } from '@/lib/urlFiltros
 import { FilterBar } from './FilterBar';
 import { FilterDrawer } from './FilterDrawer';
 import { PropertyGrid } from './PropertyGrid';
+import { AbrirLeadDrawerButton } from './AbrirLeadDrawerButton';
 import { Btn } from './ui';
 
 function titulo(f: Filtro): string {
@@ -156,6 +157,7 @@ export function PropertyListing({ imoveis }: { imoveis: Imovel[] }) {
                 </Btn>
                 <Btn onClick={() => setDrawer(true)}>Ajustar busca</Btn>
               </div>
+              <AbrirLeadDrawerButton className="mx-auto mt-5 inline-flex h-10 items-center gap-2 rounded-xl border border-line px-4 text-[13.5px] font-medium text-ink2 transition-colors hover:border-ink/30 hover:text-ink" />
             </div>
           ) : (
             <PropertyGrid imoveis={resultado} carregando={carregando} />

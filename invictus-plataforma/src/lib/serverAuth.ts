@@ -25,3 +25,22 @@ export async function tokenTemPapel(token: string, papeis: string[]): Promise<bo
     return false;
   }
 }
+
+/**
+ * Normaliza o campo `detail` de um erro do FastAPI para texto simples.
+ * Em erros de validação (422) o FastAPI manda uma lista de objetos
+ * ({loc, msg, type}), não uma string — sem isso, o front tentaria
+ * renderizar objeto/array direto e o React quebra.
+ */
+export function formatarErroBackend(detail: unknown, fallback: string): string {
+  if (typeof detail === 'string') return detail;
+
+  if (Array.isArray(detail)) {
+    const mensagens = detail
+      .map((item) => (item && typeof item === 'object' && 'msg' in item ? String((item as { msg: unknown }).msg) : null))
+      .filter((m): m is string => Boolean(m));
+    if (mensagens.length > 0) return mensagens.join(' ');
+  }
+
+  return fallback;
+}

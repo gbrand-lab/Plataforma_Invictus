@@ -6,6 +6,7 @@ import { CONFIG, mensagemImovel } from '@/lib/config';
 import { cx, dataBR, iniciais, money } from '@/lib/format';
 import type { Imovel } from '@/lib/types';
 import { WhatsAppCTA } from './WhatsAppCTA';
+import { AbrirLeadDrawerButton } from './AbrirLeadDrawerButton';
 import { inputCls, selectCls, selectStyle } from './ui';
 
 type Periodo = 'manhã' | 'tarde' | 'início da noite';
@@ -129,6 +130,8 @@ export function ContactCard({ imovel, className = '' }: { imovel: Imovel; classN
       <p className="mt-3 flex items-center gap-1.5 text-[11.5px] text-muted">
         <ShieldCheck size={13} strokeWidth={1.6} /> Atendimento {CONFIG.atendimento.toLowerCase()}
       </p>
+
+      <AbrirLeadDrawerButton className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl text-[13px] font-medium text-ink2 transition-colors hover:text-ink" />
     </div>
   );
 }

@@ -3,14 +3,14 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BAIRROS, CARACTERISTICAS, CATEGORIAS, CIDADES } from '@/lib/data';
-import { Campo, inputCls, selectCls, selectStyle } from '@/components/ui';
+import { Campo, ImageUploader, VideoUploader, inputCls, selectCls, selectStyle } from '@/components/ui';
 import { cx } from '@/lib/format';
+import type { Video } from '@/lib/types';
 import type { ImovelAdmin } from './adminTypes';
 import { LocationPicker } from './LocationPicker';
 
 type FormState = {
   titulo: string;
-  subtitulo: string;
   descricao: string;
   finalidade: 'venda' | 'aluguel' | 'repasse';
   categoria: string;
@@ -29,8 +29,8 @@ type FormState = {
   vagas: string;
   area: string;
   caracteristicas: string[];
-  imagens: string;
-  corretor: string;
+  imagens: string[];
+  video: Video | null;
   creci: string;
   telefone: string;
   whatsapp: string;
@@ -43,7 +43,6 @@ type FormState = {
 function paraFormState(imovel?: ImovelAdmin): FormState {
   return {
     titulo: imovel?.titulo ?? '',
-    subtitulo: imovel?.subtitulo ?? '',
     descricao: imovel?.descricao ?? '',
     finalidade: imovel?.finalidade ?? 'venda',
     categoria: imovel?.categoria ?? 'apartamento',
@@ -62,8 +61,8 @@ function paraFormState(imovel?: ImovelAdmin): FormState {
     vagas: imovel ? String(imovel.vagas) : '0',
     area: imovel ? String(imovel.area) : '',
     caracteristicas: imovel?.caracteristicas ?? [],
-    imagens: imovel?.imagens.join('\n') ?? '',
-    corretor: imovel?.corretor ?? '',
+    imagens: imovel?.imagens ?? [],
+    video: imovel?.videos?.[0] ?? null,
     creci: imovel?.creci ?? '',
     telefone: imovel?.telefone ?? '',
     whatsapp: imovel?.whatsapp ?? '',
@@ -109,7 +108,6 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
 
     const payload = {
       titulo: form.titulo,
-      subtitulo: form.subtitulo || null,
       descricao: form.descricao,
       finalidade: form.finalidade,
       categoria: form.categoria,
@@ -128,12 +126,8 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
       vagas: Number(form.vagas) || 0,
       area: Number(form.area) || 0,
       caracteristicas: form.caracteristicas,
-      imagens: form.imagens
-        .split('\n')
-        .map((linha) => linha.trim())
-        .filter(Boolean),
-      videos: [],
-      corretor: form.corretor,
+      imagens: form.imagens,
+      videos: form.video ? [form.video] : [],
       creci: form.creci || null,
       telefone: form.telefone || null,
       whatsapp: form.whatsapp || null,
@@ -170,8 +164,8 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
     <form onSubmit={onSubmit} className="flex flex-col gap-6">
       <section className="rounded-2xl border border-line bg-white p-5">
         <h2 className="text-[14px] font-semibold text-ink">Informações principais</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Campo label="Título" className="sm:col-span-2">
+        <div className="mt-4 grid grid-cols-1 gap-4">
+          <Campo label="Título">
             <input
               required
               className={inputCls}
@@ -179,22 +173,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
               onChange={(e) => campo('titulo', e.target.value)}
             />
           </Campo>
-          <Campo label="Subtítulo">
-            <input
-              className={inputCls}
-              value={form.subtitulo}
-              onChange={(e) => campo('subtitulo', e.target.value)}
-            />
-          </Campo>
-          <Campo label="Corretor responsável">
-            <input
-              required
-              className={inputCls}
-              value={form.corretor}
-              onChange={(e) => campo('corretor', e.target.value)}
-            />
-          </Campo>
-          <Campo label="Descrição" className="sm:col-span-2">
+          <Campo label="Descrição">
             <textarea
               required
               rows={4}
@@ -436,18 +415,20 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
               onChange={(e) => campo('whatsapp', e.target.value)}
             />
           </Campo>
-          <Campo
-            label="URLs das fotos (uma por linha)"
-            className="sm:col-span-2"
-            hint="Upload direto (Cloudinary) entra numa fase seguinte — por ora, cole URLs de imagem."
-          >
-            <textarea
-              rows={3}
-              className={cx(inputCls, 'h-auto py-2.5')}
-              value={form.imagens}
-              onChange={(e) => campo('imagens', e.target.value)}
-            />
-          </Campo>
+        </div>
+
+        <div className="mt-4">
+          <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
+            Fotos do imóvel
+          </span>
+          <ImageUploader value={form.imagens} onChange={(imagens) => campo('imagens', imagens)} />
+        </div>
+
+        <div className="mt-4">
+          <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
+            Vídeo do imóvel
+          </span>
+          <VideoUploader value={form.video} onChange={(video) => campo('video', video)} />
         </div>
       </section>
 

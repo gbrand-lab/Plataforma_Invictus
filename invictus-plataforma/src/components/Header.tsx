@@ -11,12 +11,12 @@ import { Logo } from './Logo';
 import { WhatsAppCTA } from './WhatsAppCTA';
 
 const NAV = [
-  { label: 'Menu', href: ATALHOS.menu },
-  { label: 'Comprar', href: ATALHOS.comprar },
+  { label: 'Na planta/construção', href: ATALHOS.planta },
+  { label: 'Pronto para morar', href: ATALHOS.pronto },
+  { label: 'Aluguel', href: ATALHOS.alugar },
   { label: 'Repasse de chave', href: ATALHOS.repasse },
-  { label: 'Alugar', href: ATALHOS.alugar },
-  { label: 'Na Chave', href: ATALHOS.naChave },
   { label: 'Anuncie seu imóvel', href: '/anunciar' },
+  { label: 'Área do corretor', href: '/corretor/login' },
 ];
 
 export function Header() {
@@ -53,9 +53,9 @@ export function Header() {
           <Logo />
         </Link>
 
-        <nav className="ml-auto hidden items-center gap-7 lg:flex">
+        <nav className="ml-auto hidden items-center gap-6 lg:flex">
           {NAV.map((n) => (
-            <Link key={n.label} href={n.href} className="text-[14px] font-medium text-ink2 transition-colors hover:text-ink">
+            <Link key={n.label} href={n.href} className="text-[12.5px] font-medium text-ink2 transition-colors hover:text-ink">
               {n.label}
             </Link>
           ))}

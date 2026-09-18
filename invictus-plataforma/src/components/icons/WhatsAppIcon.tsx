@@ -1,5 +1,13 @@
 /** Ícone de marca — o restante da interface usa lucide-react. */
-export function WhatsAppIcon({ size = 18, className = '' }: { size?: number; className?: string }) {
+export function WhatsAppIcon({
+  size = 18,
+  className = '',
+}: {
+  size?: number;
+  className?: string;
+  /** Aceito só para compatibilidade de tipo com LucideIcon — ignorado (ícone é fill sólido). */
+  strokeWidth?: number;
+}) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

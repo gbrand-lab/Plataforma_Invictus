@@ -29,7 +29,7 @@ export function AdminNav() {
     <header className="border-b border-line bg-white">
       <div className="mx-auto flex max-w-[1100px] items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2">
-          <Logo textClassName="text-[16px]" />
+          <Logo />
           <span className="text-[16px] font-[440] text-brand">Admin</span>
         </div>
         <button

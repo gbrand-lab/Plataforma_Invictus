@@ -9,7 +9,10 @@ import { cx } from '@/lib/format';
 const CHAVE_STORAGE = 'invictus:lead_drawer';
 const CHAVE_SESSAO = 'invictus:lead_drawer_sessao';
 const ATRASO_MS = 15000;
-const OCULTAR_EM = ['/admin', '/corretor', '/parceiros'];
+const OCULTAR_EM = ['/admin', '/corretor'];
+
+/** Disparado pelo botão "Quero receber notícias" do rodapé para abrir o drawer na hora. */
+export const EVENTO_ABRIR = 'invictus:abrir-lead-drawer';
 
 interface Estado {
   enviado?: boolean;
@@ -35,7 +38,7 @@ function salvarEstado(estado: Estado) {
 /**
  * Drawer de captura de lead — aparece uma vez por sessão, ~15s após a
  * navegação, e só volta a aparecer em outro dia (nunca mais se já enviou).
- * Some nas áreas internas (/admin, /corretor) e na vitrine sem contato (/parceiros).
+ * Some nas áreas internas (/admin, /corretor) — no site público, incluindo /parceiros, aparece normal.
  */
 export function LeadDrawer() {
   const pathname = usePathname();
@@ -51,21 +54,38 @@ export function LeadDrawer() {
 
   useEffect(() => {
     if (oculto) return;
-    if (sessionStorage.getItem(CHAVE_SESSAO)) return;
 
-    const estado = lerEstado();
-    if (estado.enviado) return;
-    if (estado.ultimaExibicao && new Date(estado.ultimaExibicao).toDateString() === new Date().toDateString()) {
-      return;
-    }
+    /** Verifica se ainda pode exibir o drawer nesta sessão/dia e, se sim, abre e marca como exibido. */
+    const podeExibir = () => {
+      if (sessionStorage.getItem(CHAVE_SESSAO)) return false;
+      const estado = lerEstado();
+      if (estado.enviado) return false;
+      if (estado.ultimaExibicao && new Date(estado.ultimaExibicao).toDateString() === new Date().toDateString()) {
+        return false;
+      }
+      return estado;
+    };
 
-    const t = setTimeout(() => {
+    const exibir = () => {
+      const estado = podeExibir();
+      if (!estado) return;
       setAberto(true);
       sessionStorage.setItem(CHAVE_SESSAO, '1');
       salvarEstado({ ...estado, ultimaExibicao: new Date().toISOString() });
-    }, ATRASO_MS);
+    };
 
-    return () => clearTimeout(t);
+    const t = setTimeout(exibir, ATRASO_MS);
+
+    // Exit-intent: mouse sai pelo topo da janela (rumo à aba/barra de endereço) — só existe em desktop.
+    const aoSairPeloTopo = (e: MouseEvent) => {
+      if (e.clientY <= 0 && !e.relatedTarget) exibir();
+    };
+    document.addEventListener('mouseout', aoSairPeloTopo);
+
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener('mouseout', aoSairPeloTopo);
+    };
   }, [oculto]);
 
   useEffect(() => {
@@ -74,6 +94,13 @@ export function LeadDrawer() {
       document.body.style.overflow = '';
     };
   }, [aberto]);
+
+  // Permite abrir manualmente (ex: botão "Quero receber notícias" no rodapé), sem esperar o gatilho de 15s.
+  useEffect(() => {
+    const abrirManual = () => setAberto(true);
+    window.addEventListener(EVENTO_ABRIR, abrirManual);
+    return () => window.removeEventListener(EVENTO_ABRIR, abrirManual);
+  }, []);
 
   if (oculto || !aberto) return null;
 
@@ -103,9 +130,14 @@ export function LeadDrawer() {
   }
 
   return (
-    <div className="fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-label="Receber atualizações de imóveis">
+    <div
+      className="fixed inset-0 z-[80] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Receber atualizações de imóveis"
+    >
       <div className="absolute inset-0 bg-ink/45" onClick={() => setAberto(false)} />
-      <aside className="drawer-in absolute inset-y-0 right-0 flex w-full max-w-[380px] flex-col overflow-y-auto bg-white p-6">
+      <aside className="modal-in relative flex max-h-[90vh] w-full max-w-[380px] flex-col overflow-y-auto rounded-2xl bg-white p-6 shadow-float">
         <div className="flex items-start justify-between">
           <span className="grid h-11 w-11 place-items-center rounded-xl bg-wash text-brandDeep">
             <BellRing size={20} strokeWidth={1.7} />
@@ -130,10 +162,10 @@ export function LeadDrawer() {
         ) : (
           <>
             <h2 className="mt-4 text-[19px] font-semibold leading-tight text-ink">
-              Quer receber atualizações de imóveis?
+              Quer ficar sempre atualizado sobre os imóveis de São Luís?
             </h2>
             <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink2">
-              Deixe seu contato e avisamos assim que surgirem novas oportunidades no seu perfil.
+              Deixe o seu contato e avisaremos assim que surgir novas oportunidades aqui😀.
             </p>
 
             <form onSubmit={enviar} className="mt-5 flex flex-col gap-3.5">

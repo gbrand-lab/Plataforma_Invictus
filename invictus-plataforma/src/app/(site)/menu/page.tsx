@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowRight, Building2, KeyRound, LayoutGrid, Repeat } from 'lucide-react';
+import { ArrowRight, Building2, Home, KeyRound, LayoutGrid, Repeat } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ATALHOS } from '@/lib/urlFiltros';
+import { AbrirLeadDrawerButton } from '@/components/AbrirLeadDrawerButton';
 
 export const metadata: Metadata = {
   title: 'Menu',
-  description: 'Escolha o que você procura: comprar, repasse de chave ou locação.',
+  description: 'Escolha o que você procura: na planta/construção, pronto para morar, aluguel ou repasse de chave.',
 };
 
 interface Opcao {
@@ -24,22 +25,28 @@ const OPCOES: Opcao[] = [
     Icone: LayoutGrid,
   },
   {
-    titulo: 'Comprar',
-    texto: 'Imóveis disponíveis para venda.',
-    href: ATALHOS.comprar,
+    titulo: 'Na planta/construção',
+    texto: 'Imóvel na planta/construção.',
+    href: ATALHOS.planta,
     Icone: Building2,
+  },
+  {
+    titulo: 'Pronto para morar',
+    texto: 'Imóvel pronto para morar.',
+    href: ATALHOS.pronto,
+    Icone: KeyRound,
+  },
+  {
+    titulo: 'Aluguel',
+    texto: 'Encontre seu próximo imóvel para alugar.',
+    href: ATALHOS.alugar,
+    Icone: Home,
   },
   {
     titulo: 'Repasse de chave',
     texto: 'Assuma o financiamento e entre com as chaves na mão.',
     href: ATALHOS.repasse,
     Icone: Repeat,
-  },
-  {
-    titulo: 'Locação',
-    texto: 'Encontre seu próximo imóvel para alugar.',
-    href: ATALHOS.alugar,
-    Icone: KeyRound,
   },
 ];
 
@@ -76,6 +83,8 @@ export default function MenuPage() {
           </Link>
         ))}
       </div>
+
+      <AbrirLeadDrawerButton className="mx-auto mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-line text-[14px] font-medium text-ink2 transition-colors hover:border-ink/30 hover:text-ink" />
     </div>
   );
 }

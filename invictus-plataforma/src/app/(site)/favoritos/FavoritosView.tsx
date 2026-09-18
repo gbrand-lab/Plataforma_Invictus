@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Heart, Search } from 'lucide-react';
 import { PropertyGrid } from '@/components/PropertyGrid';
 import { btnClass } from '@/components/ui';
+import { AbrirLeadDrawerButton } from '@/components/AbrirLeadDrawerButton';
 import { useFavoritosCtx } from '@/lib/favoritos-context';
 import { num } from '@/lib/format';
 import type { Imovel } from '@/lib/types';
@@ -32,6 +33,7 @@ export function FavoritosView({ imoveis }: { imoveis: Imovel[] }) {
           <Link href="/imoveis" className={btnClass('primary', 'md', 'mt-6')}>
             <Search size={16} strokeWidth={1.7} /> Buscar imóveis
           </Link>
+          <AbrirLeadDrawerButton className="mx-auto mt-3 flex h-10 items-center gap-2 rounded-xl px-4 text-[13.5px] font-medium text-ink2 transition-colors hover:text-ink" />
         </div>
       ) : (
         <div className="mt-8">

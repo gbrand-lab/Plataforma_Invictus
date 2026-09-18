@@ -58,10 +58,10 @@ export function searchParamsFromFiltro(f: Filtro): URLSearchParams {
 
 /** Atalhos usados no header, nos cards de categoria e no rodapé. */
 export const ATALHOS = {
-  comprar: '/imoveis?finalidade=venda',
+  planta: '/imoveis?finalidade=venda',
+  pronto: '/imoveis?naChave=1',
   alugar: '/imoveis?finalidade=aluguel',
   repasse: '/imoveis?finalidade=repasse',
-  naChave: '/imoveis?naChave=1',
   todos: '/imoveis',
   menu: '/menu',
 } as const;

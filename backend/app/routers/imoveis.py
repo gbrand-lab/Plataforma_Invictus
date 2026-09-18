@@ -145,6 +145,9 @@ def criar_imovel(
     dados = payload.model_dump()
     dados["videos"] = [v.model_dump() if hasattr(v, "model_dump") else v for v in dados.get("videos", [])]
 
+    # Corretor responsável é sempre quem está logado — nunca um valor enviado pelo cliente.
+    dados["corretor"] = usuario.nome
+
     # Corretor não escolhe o status livremente — segue a configuração de aprovação do admin.
     if usuario.role != "admin":
         config = obter_configuracao(db)
@@ -185,9 +188,10 @@ def atualizar_imovel(
     if "videos" in dados:
         dados["videos"] = [v.model_dump() if hasattr(v, "model_dump") else v for v in dados["videos"]]
 
-    # Corretor não pode mudar o próprio status para burlar a aprovação.
+    # Corretor não pode mudar o próprio status (burlaria a aprovação) nem o nome do corretor responsável.
     if usuario.role != "admin":
         dados.pop("status", None)
+        dados.pop("corretor", None)
 
     for campo, valor in dados.items():
         setattr(imovel, campo, valor)
