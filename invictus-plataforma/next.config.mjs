@@ -7,7 +7,8 @@ const BACKEND_ORIGEM = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
 const CSP = [
   "default-src 'self'",
   `img-src 'self' data: https:${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
-  `media-src 'self' https:${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
+  // blob: é o preview local do vídeo no admin (lê a duração antes de enviar) e o player da galeria.
+  `media-src 'self' blob: https:${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
   "style-src 'self' 'unsafe-inline'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : ''}`,
   `connect-src 'self' https://nominatim.openstreetmap.org${BACKEND_ORIGEM ? ` ${BACKEND_ORIGEM}` : ''}${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
