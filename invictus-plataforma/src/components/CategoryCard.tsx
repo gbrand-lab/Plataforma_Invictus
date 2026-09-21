@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Building2, Home, KeyRound, Repeat } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { scene, type SceneName } from '@/lib/scenes';
 import { ATALHOS } from '@/lib/urlFiltros';
 import { Foto, Reveal, SectionHead } from './ui';
 import { AbrirLeadDrawerButton } from './AbrirLeadDrawerButton';
@@ -12,8 +11,7 @@ interface Categoria {
   texto: string;
   cta: string;
   href: string;
-  cena: SceneName;
-  seed: number;
+  foto: string;
   Icone: LucideIcon;
 }
 
@@ -24,8 +22,7 @@ const CATEGORIAS: Categoria[] = [
     texto: 'Imóvel na planta/construção.',
     cta: 'Ver imóveis',
     href: ATALHOS.planta,
-    cena: 'facade',
-    seed: 205,
+    foto: '/categoria-planta.webp',
     Icone: Building2,
   },
   {
@@ -34,8 +31,7 @@ const CATEGORIAS: Categoria[] = [
     texto: 'Imóvel pronto para morar.',
     cta: 'Ver imóveis',
     href: ATALHOS.pronto,
-    cena: 'house',
-    seed: 211,
+    foto: '/categoria-pronto.webp',
     Icone: KeyRound,
   },
   {
@@ -44,8 +40,7 @@ const CATEGORIAS: Categoria[] = [
     texto: 'Encontre seu próximo imóvel.',
     cta: 'Ver imóveis',
     href: ATALHOS.alugar,
-    cena: 'tower',
-    seed: 217,
+    foto: '/categoria-aluguel.webp',
     Icone: Home,
   },
   {
@@ -54,8 +49,7 @@ const CATEGORIAS: Categoria[] = [
     texto: 'Assuma o financiamento e entre com as chaves na mão.',
     cta: 'Ver repasses',
     href: ATALHOS.repasse,
-    cena: 'interior',
-    seed: 223,
+    foto: '/categoria-repasse.webp',
     Icone: Repeat,
   },
 ];
@@ -77,7 +71,7 @@ export function CategoryCards() {
             >
               <div className="relative h-[300px] w-full sm:h-[360px]">
                 <Foto
-                  src={scene(c.cena, c.seed)}
+                  src={c.foto}
                   alt={c.titulo}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
                   className="opacity-95 transition-transform duration-[550ms] ease-invictus group-hover:scale-[1.05]"

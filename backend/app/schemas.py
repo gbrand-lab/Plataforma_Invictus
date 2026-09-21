@@ -60,7 +60,7 @@ class ImovelBase(BaseModel):
     condominio: float = 0
     iptu: float = 0
     cidade: str
-    bairro: str
+    bairro: str = Field(min_length=1)
     endereco: str
     lat: float | None = None
     lng: float | None = None
@@ -88,6 +88,9 @@ class ImovelCreate(ImovelBase):
     slug: str | None = None
     # Preenchido automaticamente pelo backend a partir de quem está logado — ver routers/imoveis.py.
     corretor: str | None = None
+    # Só no cadastro — sobrescreve o `imagens: list[str] = []` de ImovelBase (que também serve de
+    # saída/leitura, onde não dá pra exigir 3 fotos de imóveis antigos já cadastrados com menos).
+    imagens: list[str] = Field(min_length=3)
 
 
 class ImovelUpdate(BaseModel):
@@ -101,7 +104,7 @@ class ImovelUpdate(BaseModel):
     condominio: float | None = None
     iptu: float | None = None
     cidade: str | None = None
-    bairro: str | None = None
+    bairro: str | None = Field(default=None, min_length=1)
     endereco: str | None = None
     lat: float | None = None
     lng: float | None = None

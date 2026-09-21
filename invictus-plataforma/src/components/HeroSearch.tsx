@@ -1,5 +1,4 @@
 import { CONFIG } from '@/lib/config';
-import { scene } from '@/lib/scenes';
 import { Foto } from './ui';
 import { SearchBar } from './SearchBar';
 
@@ -14,8 +13,8 @@ export function HeroSearch({ total }: { total: number }) {
       <div className="relative overflow-hidden bg-ink">
         <div className="relative h-[440px] w-full sm:h-[520px] lg:h-[580px]">
           <Foto
-            src={scene('aerial', 101)}
-            alt="Vista aérea da orla de São Luís com edifícios residenciais"
+            src="/hero.webp"
+            alt="Varanda gourmet com vista para o pôr do sol em São Luís"
             priority
             sizes="100vw"
             className="opacity-95"

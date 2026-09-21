@@ -104,6 +104,12 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro('');
+
+    if (form.imagens.length < 3) {
+      setErro('Envie pelo menos 3 fotos do imóvel.');
+      return;
+    }
+
     setSalvando(true);
 
     const payload = {
@@ -165,7 +171,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
       <section className="rounded-2xl border border-line bg-white p-5">
         <h2 className="text-[14px] font-semibold text-ink">Informações principais</h2>
         <div className="mt-4 grid grid-cols-1 gap-4">
-          <Campo label="Título">
+          <Campo label="Nome do imóvel">
             <input
               required
               className={inputCls}
@@ -202,6 +208,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
           </Campo>
           <Campo label="Categoria">
             <select
+              required
               className={selectCls}
               style={selectStyle}
               value={form.categoria}
@@ -330,6 +337,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
           <Campo label="Quartos">
             <input
+              required
               type="number"
               min={0}
               className={inputCls}
@@ -348,6 +356,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
           </Campo>
           <Campo label="Banheiros">
             <input
+              required
               type="number"
               min={0}
               className={inputCls}
@@ -357,6 +366,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
           </Campo>
           <Campo label="Vagas">
             <input
+              required
               type="number"
               min={0}
               className={inputCls}
@@ -419,7 +429,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
 
         <div className="mt-4">
           <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
-            Fotos do imóvel
+            Fotos do imóvel <span className="normal-case text-muted/80">(mínimo 3)</span>
           </span>
           <ImageUploader value={form.imagens} onChange={(imagens) => campo('imagens', imagens)} />
         </div>

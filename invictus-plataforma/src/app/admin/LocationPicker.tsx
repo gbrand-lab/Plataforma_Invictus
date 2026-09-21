@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { Loader2, MapPin, Search } from 'lucide-react';
+import { Loader2, MapPin, MapPinned, Search } from 'lucide-react';
 import { inputCls } from '@/components/ui';
 import { cx } from '@/lib/format';
 
@@ -17,6 +17,13 @@ interface Resultado {
   lat: string;
   lon: string;
 }
+
+/** Centro aproximado de cada cidade atendida — usado pra abrir o mapa quando a busca por endereço não acha nada. */
+const CENTRO_CIDADE: Record<string, [number, number]> = {
+  'São Luís': [-2.5307, -44.3068],
+  'São José de Ribamar': [-2.5606, -44.0533],
+  'Paço do Lumiar': [-2.5083, -44.1075],
+};
 
 interface LocationPickerProps {
   enderecoSugerido: string;
@@ -78,6 +85,16 @@ export function LocationPicker({ enderecoSugerido, cidade, lat, lng, onSeleciona
     onSelecionar(r.lat, r.lon);
   }
 
+  /** A busca no OSM/Nominatim tem cobertura fraca em São Luís/MA — quando não acha nada, abre o mapa
+   *  centralizado na cidade escolhida pra marcar o pino manualmente, em vez de deixar sem opção. */
+  function abrirMapaManual() {
+    const centro = CENTRO_CIDADE[cidade] ?? CENTRO_CIDADE['São Luís'];
+    setEscolhido(null);
+    setErro('');
+    setResultados([]);
+    onSelecionar(String(centro[0]), String(centro[1]));
+  }
+
   const temCoordenadas = Boolean(lat && lng);
 
   return (
@@ -103,6 +120,18 @@ export function LocationPicker({ enderecoSugerido, cidade, lat, lng, onSeleciona
       <p className="-mt-1 text-[12px] text-muted">Busca restrita a {cidade || 'nenhuma cidade selecionada'}/MA.</p>
 
       {erro && <p className="text-[12.5px] font-medium text-brandDeep">{erro}</p>}
+
+      {!temCoordenadas && (
+        <button
+          type="button"
+          onClick={abrirMapaManual}
+          disabled={!cidade}
+          className="flex items-center gap-1.5 self-start text-[12.5px] font-medium text-brand transition-colors hover:text-brandDeep disabled:opacity-60"
+        >
+          <MapPinned size={14} strokeWidth={1.8} />
+          Não achou o endereço? Abrir mapa e marcar manualmente
+        </button>
+      )}
 
       {resultados.length > 0 && (
         <ul className="overflow-hidden rounded-xl border border-line">
