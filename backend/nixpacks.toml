@@ -1,0 +1,4 @@
+# Garante o binário do ffmpeg no build do Railway — usado pra comprimir vídeos
+# grandes de imóvel antes de guardar (ver app/video.py).
+[phases.setup]
+nixPkgs = ["ffmpeg"]

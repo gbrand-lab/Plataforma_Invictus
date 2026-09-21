@@ -48,9 +48,28 @@ export function VideoUploader({ value, onChange, className = '' }: VideoUploader
     try {
       const duracao = await lerDuracao(arquivo);
 
+      // Pega um token válido pro upload e manda o arquivo direto pro backend — não passa pelo
+      // proxy do Next.js, cuja plataforma (Vercel) limita bem o tamanho do corpo das requisições.
+      const tokenResp = await fetch('/api/uploads/video-token');
+      const tokenDados = await tokenResp.json().catch(() => ({}));
+      if (!tokenResp.ok || !tokenDados.token) {
+        setErro('Sua sessão expirou. Atualize a página e faça login de novo.');
+        return;
+      }
+
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      if (!backendUrl) {
+        setErro('Upload de vídeo não configurado (NEXT_PUBLIC_BACKEND_URL ausente).');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('arquivo', arquivo);
-      const resposta = await fetch('/api/uploads/video', { method: 'POST', body: formData });
+      const resposta = await fetch(`${backendUrl}/uploads/video`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${tokenDados.token}` },
+        body: formData,
+      });
       const dados = await resposta.json().catch(() => ({}));
 
       if (!resposta.ok) {
@@ -127,7 +146,7 @@ export function VideoUploader({ value, onChange, className = '' }: VideoUploader
         <p className="text-[13.5px] font-medium text-ink">
           {enviando ? 'Enviando vídeo...' : 'Arraste um vídeo aqui ou clique para selecionar'}
         </p>
-        <p className="text-[12px] text-muted">MP4, WebM ou MOV · até 200 MB</p>
+        <p className="text-[12px] text-muted">MP4, WebM ou MOV · sem limite de tamanho (compactamos automaticamente)</p>
         <input
           ref={inputRef}
           type="file"

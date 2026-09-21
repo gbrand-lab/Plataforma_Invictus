@@ -1,12 +1,16 @@
 // Next.js usa eval() no HMR do modo dev — 'unsafe-eval' fica restrito a esse ambiente.
 // Em dev, as fotos e vídeos enviados no admin vêm do backend local (http://localhost:8001) — daí o http: em img-src/media-src.
+// O upload de vídeo vai direto do navegador pro backend (NEXT_PUBLIC_BACKEND_URL) — a Vercel limita
+// muito o tamanho do corpo de requisição das suas próprias functions, então não dá pra passar pelo
+// proxy do Next.js pra arquivo grande. Isso exige liberar o domínio do backend no connect-src.
+const BACKEND_ORIGEM = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
 const CSP = [
   "default-src 'self'",
   `img-src 'self' data: https:${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
   `media-src 'self' https:${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
   "style-src 'self' 'unsafe-inline'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : ''}`,
-  "connect-src 'self' https://nominatim.openstreetmap.org",
+  `connect-src 'self' https://nominatim.openstreetmap.org${BACKEND_ORIGEM ? ` ${BACKEND_ORIGEM}` : ''}${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
   "frame-src https://maps.google.com https://www.google.com",
   "frame-ancestors 'none'",
   "object-src 'none'",

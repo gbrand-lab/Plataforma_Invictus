@@ -7,6 +7,7 @@ URL salva no imóvel já é a do CDN (`res.cloudinary.com/...`). Sem credenciais
 sobrevive a um novo deploy, então em produção (Railway) configure o Cloudinary.
 """
 
+import shutil
 import uuid
 from pathlib import Path
 
@@ -56,19 +57,24 @@ def salvar_imagem(conteudo: bytes, extensao: str, request: Request) -> str:
     return str(request.base_url).rstrip("/") + f"/uploads/imoveis/{nome}"
 
 
-def salvar_video(conteudo: bytes, extensao: str, request: Request) -> str:
-    """Salva um arquivo de vídeo já validado e devolve a URL pública."""
+def salvar_video_arquivo(caminho: Path, request: Request) -> str:
+    """
+    Envia um vídeo que já está em disco (não em memória — vídeo pode passar de
+    centenas de MB) e devolve a URL pública. `caminho` é o arquivo final,
+    depois de já ter passado (ou não) pela compressão em app/video.py.
+    """
     if settings.cloudinary_configurado:
         import cloudinary.uploader
 
         _configurar_cloudinary()
-        resultado = cloudinary.uploader.upload(
-            conteudo,
+        resultado = cloudinary.uploader.upload_large(
+            str(caminho),
             folder="invictus/imoveis/videos",
             resource_type="video",
         )
         return resultado["secure_url"]
 
-    nome = f"{uuid.uuid4().hex}{extensao}"
-    (_LOCAL_DIR_VIDEOS / nome).write_bytes(conteudo)
+    nome = f"{uuid.uuid4().hex}{caminho.suffix}"
+    destino = _LOCAL_DIR_VIDEOS / nome
+    shutil.copy(caminho, destino)
     return str(request.base_url).rstrip("/") + f"/uploads/videos/{nome}"

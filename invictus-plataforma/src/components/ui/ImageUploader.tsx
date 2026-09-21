@@ -12,7 +12,6 @@ interface ImageUploaderProps {
 }
 
 const TIPOS_IMAGEM = ['image/jpeg', 'image/png', 'image/webp'];
-const TIPO_PDF = 'application/pdf';
 
 async function enviarLote(url: string, formData: FormData): Promise<{ urls?: string[]; detail?: unknown }> {
   const resposta = await fetch(url, { method: 'POST', body: formData });
@@ -21,54 +20,32 @@ async function enviarLote(url: string, formData: FormData): Promise<{ urls?: str
   return dados;
 }
 
-/**
- * Upload de fotos por arraste ou seleção — envia pro backend e guarda as URLs retornadas.
- * Também aceita PDF (book do imóvel): o backend converte cada página numa imagem.
- */
+/** Upload de fotos por arraste ou seleção — envia pro backend e guarda as URLs retornadas. */
 export function ImageUploader({ value, onChange, className = '' }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [arrastando, setArrastando] = useState(false);
   const [enviando, setEnviando] = useState(false);
-  const [progresso, setProgresso] = useState('');
   const [erro, setErro] = useState('');
 
   async function enviarArquivos(lista: FileList | File[]) {
-    const todos = Array.from(lista);
-    const imagens = todos.filter((f) => TIPOS_IMAGEM.includes(f.type));
-    const pdfs = todos.filter((f) => f.type === TIPO_PDF);
+    const imagens = Array.from(lista).filter((f) => TIPOS_IMAGEM.includes(f.type));
 
-    if (imagens.length === 0 && pdfs.length === 0) {
-      setErro('Envie imagens (JPG, PNG, WebP) ou um PDF.');
+    if (imagens.length === 0) {
+      setErro('Envie imagens em JPG, PNG ou WebP.');
       return;
     }
 
     setErro('');
     setEnviando(true);
     try {
-      const novasUrls: string[] = [];
-
-      if (imagens.length > 0) {
-        setProgresso('Enviando fotos...');
-        const formData = new FormData();
-        imagens.forEach((arquivo) => formData.append('arquivos', arquivo));
-        const dados = await enviarLote('/api/uploads', formData);
-        novasUrls.push(...(dados.urls ?? []));
-      }
-
-      for (const pdf of pdfs) {
-        setProgresso(`Convertendo páginas de "${pdf.name}"...`);
-        const formData = new FormData();
-        formData.append('arquivo', pdf);
-        const dados = await enviarLote('/api/uploads/pdf', formData);
-        novasUrls.push(...(dados.urls ?? []));
-      }
-
-      onChange([...value, ...novasUrls]);
+      const formData = new FormData();
+      imagens.forEach((arquivo) => formData.append('arquivos', arquivo));
+      const dados = await enviarLote('/api/uploads', formData);
+      onChange([...value, ...(dados.urls ?? [])]);
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível enviar. Confira sua conexão e tente de novo.');
     } finally {
       setEnviando(false);
-      setProgresso('');
     }
   }
 
@@ -104,13 +81,13 @@ export function ImageUploader({ value, onChange, className = '' }: ImageUploader
           <ImagePlus size={22} strokeWidth={1.6} className="text-muted" />
         )}
         <p className="text-[13.5px] font-medium text-ink">
-          {enviando ? progresso || 'Enviando...' : 'Arraste as fotos ou um PDF aqui, ou clique para selecionar'}
+          {enviando ? 'Enviando fotos...' : 'Arraste as fotos aqui ou clique para selecionar'}
         </p>
-        <p className="text-[12px] text-muted">JPG, PNG, WebP (até 8 MB) ou PDF (cada página vira uma foto)</p>
+        <p className="text-[12px] text-muted">JPG, PNG ou WebP (até 8 MB cada)</p>
         <input
           ref={inputRef}
           type="file"
-          accept={[...TIPOS_IMAGEM, TIPO_PDF].join(',')}
+          accept={TIPOS_IMAGEM.join(',')}
           multiple
           className="hidden"
           onChange={(e) => {

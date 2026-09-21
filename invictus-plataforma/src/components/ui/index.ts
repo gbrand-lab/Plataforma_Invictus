@@ -4,6 +4,7 @@ export { Tag } from './Tag';
 export type { TagTone } from './Tag';
 export { Campo, inputCls, selectCls, selectStyle } from './Fields';
 export { ImageUploader } from './ImageUploader';
+export { PdfUploader } from './PdfUploader';
 export { VideoUploader } from './VideoUploader';
 export { Foto } from './Foto';
 export { Reveal } from './Reveal';

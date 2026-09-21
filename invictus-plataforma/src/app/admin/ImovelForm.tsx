@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BAIRROS, CARACTERISTICAS, CATEGORIAS, CIDADES } from '@/lib/data';
-import { Campo, ImageUploader, VideoUploader, inputCls, selectCls, selectStyle } from '@/components/ui';
+import { Campo, ImageUploader, PdfUploader, VideoUploader, inputCls, selectCls, selectStyle } from '@/components/ui';
 import { cx } from '@/lib/format';
 import type { Video } from '@/lib/types';
 import type { ImovelAdmin } from './adminTypes';
@@ -427,18 +427,28 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
           </Campo>
         </div>
 
-        <div className="mt-4">
-          <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
-            Fotos do imóvel <span className="normal-case text-muted/80">(mínimo 3)</span>
-          </span>
-          <ImageUploader value={form.imagens} onChange={(imagens) => campo('imagens', imagens)} />
-        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div>
+            <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
+              Fotos <span className="normal-case text-muted/80">(mínimo 3)</span>
+            </span>
+            <ImageUploader value={form.imagens} onChange={(imagens) => campo('imagens', imagens)} />
+          </div>
 
-        <div className="mt-4">
-          <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
-            Vídeo do imóvel
-          </span>
-          <VideoUploader value={form.video} onChange={(video) => campo('video', video)} />
+          <div>
+            <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
+              PDF (book do imóvel)
+            </span>
+            <PdfUploader value={form.imagens} onChange={(imagens) => campo('imagens', imagens)} />
+            <p className="mt-2 text-[11.5px] text-muted">As páginas convertidas entram na lista de fotos.</p>
+          </div>
+
+          <div>
+            <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
+              Vídeo
+            </span>
+            <VideoUploader value={form.video} onChange={(video) => campo('video', video)} />
+          </div>
         </div>
       </section>
 

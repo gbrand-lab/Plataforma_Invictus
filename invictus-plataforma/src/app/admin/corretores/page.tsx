@@ -28,34 +28,54 @@ export default async function CorretoresPage() {
         {usuarios.length} usuário(s) cadastrado(s) na plataforma.
       </p>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-white">
-        <table className="w-full text-left text-[13.5px]">
-          <thead>
-            <tr className="border-b border-line bg-wash/40 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-              <th className="px-4 py-3">Nome</th>
-              <th className="px-4 py-3">Contato</th>
-              <th className="px-4 py-3">Papel</th>
-              <th className="px-4 py-3">Imóveis cadastrados</th>
-              <th className="px-4 py-3">Desde</th>
-            </tr>
-          </thead>
-          <tbody>
-            {usuarios.map((u) => (
-              <tr key={u.id} className="border-b border-line last:border-0">
-                <td className="px-4 py-3 font-medium text-ink">{u.nome}</td>
-                <td className="px-4 py-3 text-ink2">
-                  <p>{u.email}</p>
-                  {u.telefone ? <p className="text-[12px] text-muted">{u.telefone}</p> : null}
-                </td>
-                <td className="px-4 py-3">
-                  <Tag tone={u.role === 'admin' ? 'dark' : 'wash'}>{ROLE_LABEL[u.role] ?? u.role}</Tag>
-                </td>
-                <td className="px-4 py-3 text-ink2">{u.total_imoveis}</td>
-                <td className="px-4 py-3 text-muted">{dataBR(u.criado_em.slice(0, 10))}</td>
+      <div className="mt-6 rounded-2xl border border-line bg-white">
+        {/* Mobile: cards empilhados */}
+        <div className="divide-y divide-line sm:hidden">
+          {usuarios.map((u) => (
+            <div key={u.id} className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-medium text-ink">{u.nome}</p>
+                <Tag tone={u.role === 'admin' ? 'dark' : 'wash'}>{ROLE_LABEL[u.role] ?? u.role}</Tag>
+              </div>
+              <p className="mt-1.5 text-[13px] text-ink2">{u.email}</p>
+              {u.telefone ? <p className="text-[12px] text-muted">{u.telefone}</p> : null}
+              <p className="mt-2 text-[12px] text-muted">
+                {u.total_imoveis} imóvel(is) · desde {dataBR(u.criado_em.slice(0, 10))}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop/tablet: tabela */}
+        <div className="hidden overflow-x-auto sm:block">
+          <table className="w-full text-left text-[13.5px]">
+            <thead>
+              <tr className="border-b border-line bg-wash/40 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                <th className="px-4 py-3">Nome</th>
+                <th className="px-4 py-3">Contato</th>
+                <th className="px-4 py-3">Papel</th>
+                <th className="px-4 py-3">Imóveis cadastrados</th>
+                <th className="px-4 py-3">Desde</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {usuarios.map((u) => (
+                <tr key={u.id} className="border-b border-line last:border-0">
+                  <td className="px-4 py-3 font-medium text-ink">{u.nome}</td>
+                  <td className="px-4 py-3 text-ink2">
+                    <p>{u.email}</p>
+                    {u.telefone ? <p className="text-[12px] text-muted">{u.telefone}</p> : null}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Tag tone={u.role === 'admin' ? 'dark' : 'wash'}>{ROLE_LABEL[u.role] ?? u.role}</Tag>
+                  </td>
+                  <td className="px-4 py-3 text-ink2">{u.total_imoveis}</td>
+                  <td className="px-4 py-3 text-muted">{dataBR(u.criado_em.slice(0, 10))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
