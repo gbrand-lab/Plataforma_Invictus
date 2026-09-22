@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
-import { Loader2, MapPin, MapPinned, Search } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, Loader2, MapPin, MapPinned, Search } from 'lucide-react';
 import { inputCls } from '@/components/ui';
 import { cx } from '@/lib/format';
 
@@ -18,16 +18,31 @@ interface Resultado {
   lon: string;
 }
 
-/** Centro aproximado de cada cidade atendida — usado pra abrir o mapa quando a busca por endereço não acha nada. */
+/** Centro aproximado de cada cidade atendida — usado como último recurso, quando nem o bairro é conhecido. */
 const CENTRO_CIDADE: Record<string, [number, number]> = {
   'São Luís': [-2.5307, -44.3068],
   'São José de Ribamar': [-2.5606, -44.0533],
   'Paço do Lumiar': [-2.5083, -44.1075],
 };
 
+/** Centro aproximado de cada bairro atendido (BAIRROS em @/lib/data) — ponto de partida pro pino, que o admin ajusta depois. */
+const CENTRO_BAIRRO: Record<string, [number, number]> = {
+  'Jardim Renascença': [-2.5217, -44.2909],
+  'Renascença II': [-2.5185, -44.2831],
+  'Ponta d’Areia': [-2.4939, -44.2938],
+  Calhau: [-2.487, -44.2751],
+  'Olho d’Água': [-2.4757, -44.2588],
+  Cohama: [-2.5443, -44.2588],
+  Cohafuma: [-2.5548, -44.2438],
+  Araçagy: [-2.5622, -44.2179],
+  Turu: [-2.5487, -44.227],
+  'São Francisco': [-2.5089, -44.2732],
+};
+
 interface LocationPickerProps {
   enderecoSugerido: string;
   cidade: string;
+  bairro: string;
   lat: string;
   lng: string;
   onSelecionar: (lat: string, lng: string) => void;
@@ -42,12 +57,31 @@ interface LocationPickerProps {
  * estruturados `street`/`city`/`state`), então o campo de texto aqui é só
  * a rua — não precisa repetir cidade/estado.
  */
-export function LocationPicker({ enderecoSugerido, cidade, lat, lng, onSelecionar }: LocationPickerProps) {
+export function LocationPicker({ enderecoSugerido, cidade, bairro, lat, lng, onSelecionar }: LocationPickerProps) {
   const [query, setQuery] = useState(enderecoSugerido);
   const [resultados, setResultados] = useState<Resultado[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [erro, setErro] = useState('');
   const [escolhido, setEscolhido] = useState<string | null>(null);
+  /** Posição do pino ainda não confirmada — só vira a localização de verdade do imóvel ao clicar "Ok". */
+  const [pendente, setPendente] = useState<{ lat: number; lng: number } | null>(null);
+
+  /** Ao trocar o bairro (não no carregamento inicial), leva o pino direto pra lá — ponto de partida pro admin ajustar. */
+  const bairroAnterior = useRef(bairro);
+  useEffect(() => {
+    if (bairro === bairroAnterior.current) return;
+    bairroAnterior.current = bairro;
+
+    const centro = CENTRO_BAIRRO[bairro];
+    if (!centro) return;
+
+    setEscolhido(null);
+    setErro('');
+    setResultados([]);
+    setPendente(null);
+    onSelecionar(String(centro[0]), String(centro[1]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bairro]);
 
   async function buscar() {
     if (!query.trim()) return;
@@ -82,20 +116,31 @@ export function LocationPicker({ enderecoSugerido, cidade, lat, lng, onSeleciona
   function escolher(r: Resultado) {
     setEscolhido(r.display_name);
     setResultados([]);
+    setPendente(null);
     onSelecionar(r.lat, r.lon);
   }
 
   /** A busca no OSM/Nominatim tem cobertura fraca em São Luís/MA — quando não acha nada, abre o mapa
    *  centralizado na cidade escolhida pra marcar o pino manualmente, em vez de deixar sem opção. */
   function abrirMapaManual() {
-    const centro = CENTRO_CIDADE[cidade] ?? CENTRO_CIDADE['São Luís'];
+    const centro = CENTRO_BAIRRO[bairro] ?? CENTRO_CIDADE[cidade] ?? CENTRO_CIDADE['São Luís'];
     setEscolhido(null);
     setErro('');
     setResultados([]);
+    setPendente(null);
     onSelecionar(String(centro[0]), String(centro[1]));
   }
 
+  /** Confirma a posição do pino arrastado — só aí a localização do imóvel muda de verdade. */
+  function confirmarPino() {
+    if (!pendente) return;
+    onSelecionar(String(pendente.lat), String(pendente.lng));
+    setPendente(null);
+  }
+
   const temCoordenadas = Boolean(lat && lng);
+  const latAtual = pendente ? pendente.lat : Number(lat);
+  const lngAtual = pendente ? pendente.lng : Number(lng);
 
   return (
     <div className="flex flex-col gap-3">
@@ -157,17 +202,34 @@ export function LocationPicker({ enderecoSugerido, cidade, lat, lng, onSeleciona
         <div>
           <div className="overflow-hidden rounded-xl border border-line">
             <MapaArrastavel
-              lat={Number(lat)}
-              lng={Number(lng)}
+              lat={latAtual}
+              lng={lngAtual}
               onMover={(novoLat, novoLng) => {
                 setEscolhido(null);
-                onSelecionar(String(novoLat), String(novoLng));
+                setPendente({ lat: novoLat, lng: novoLng });
               }}
             />
           </div>
-          <p className="mt-1.5 text-[12px] text-muted">
-            {escolhido ?? 'Arraste o pino ou clique no mapa para ajustar.'} — {lat}, {lng}
-          </p>
+
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="text-[12px] text-muted">
+              {pendente
+                ? 'Pino movido — clique em "Ok" pra confirmar a nova localização.'
+                : (escolhido ?? 'Arraste o pino ou clique no mapa para ajustar.')}
+              {' — '}
+              {latAtual.toFixed(6)}, {lngAtual.toFixed(6)}
+            </p>
+            {pendente ? (
+              <button
+                type="button"
+                onClick={confirmarPino}
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-ink px-3 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                <Check size={14} strokeWidth={2.2} />
+                Ok
+              </button>
+            ) : null}
+          </div>
         </div>
       )}
     </div>

@@ -314,6 +314,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
           <LocationPicker
             enderecoSugerido={form.endereco}
             cidade={form.cidade}
+            bairro={form.bairro}
             lat={form.lat}
             lng={form.lng}
             onSelecionar={(lat, lng) => setForm((atual) => ({ ...atual, lat, lng }))}

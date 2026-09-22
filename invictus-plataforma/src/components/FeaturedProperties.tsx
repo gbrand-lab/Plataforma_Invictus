@@ -93,7 +93,7 @@ export function RecentProperties({ imoveis }: { imoveis: Imovel[] }) {
           </Link>
         </Reveal>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 self-start">
           {resto.slice(0, 3).map((imovel, i) => (
             <Reveal key={imovel.id} delay={i * 70} className="h-full">
               <Link
