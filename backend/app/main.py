@@ -29,7 +29,33 @@ def _adicionar_colunas_novas() -> None:
                 conn.execute(text(f"ALTER TABLE imoveis ADD COLUMN {nome} {definicao}"))
 
 
+def _migrar_categoria_casa() -> None:
+    """
+    "casa" virou "casa_solta"/"casa_condominio" no schema — imóveis já
+    cadastrados com o valor antigo travam a validação (Pydantic rejeita
+    "casa" por não estar mais no Literal). Sem saber qual dos dois é
+    correto pra cada um, "casa_solta" é o padrão mais comum; o admin pode
+    corrigir depois editando o imóvel.
+    """
+    inspetor = inspect(engine)
+    if "imoveis" not in inspetor.get_table_names():
+        return
+    with engine.begin() as conn:
+        conn.execute(text("UPDATE imoveis SET categoria = 'casa_solta' WHERE categoria = 'casa'"))
+
+
+def _migrar_status_inactive() -> None:
+    """Mesma história do "casa": "inactive" saiu do StatusImovel — vira "draft" (fora do site, admin decide o resto)."""
+    inspetor = inspect(engine)
+    if "imoveis" not in inspetor.get_table_names():
+        return
+    with engine.begin() as conn:
+        conn.execute(text("UPDATE imoveis SET status = 'draft' WHERE status = 'inactive'"))
+
+
 _adicionar_colunas_novas()
+_migrar_categoria_casa()
+_migrar_status_inactive()
 
 UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)

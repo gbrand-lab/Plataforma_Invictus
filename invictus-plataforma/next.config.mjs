@@ -11,7 +11,7 @@ const CSP = [
   `media-src 'self' blob: https:${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
   "style-src 'self' 'unsafe-inline'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : ''}`,
-  `connect-src 'self' https://nominatim.openstreetmap.org${BACKEND_ORIGEM ? ` ${BACKEND_ORIGEM}` : ''}${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
+  `connect-src 'self' https://nominatim.openstreetmap.org https://viacep.com.br${BACKEND_ORIGEM ? ` ${BACKEND_ORIGEM}` : ''}${process.env.NODE_ENV !== 'production' ? ' http://localhost:8001' : ''}`,
   "frame-src https://maps.google.com https://www.google.com",
   "frame-ancestors 'none'",
   "object-src 'none'",
