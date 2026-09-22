@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BAIRROS, CARACTERISTICAS, CATEGORIAS, CIDADES } from '@/lib/data';
 import { Campo, ImageUploader, PdfUploader, VideoUploader, inputCls, selectCls, selectStyle } from '@/components/ui';
-import { cx } from '@/lib/format';
+import { cx, num, somenteDigitos } from '@/lib/format';
 import type { Video } from '@/lib/types';
 import type { ImovelAdmin } from './adminTypes';
 import { LocationPicker } from './LocationPicker';
@@ -241,29 +241,29 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
           <Campo label="Preço (R$)">
             <input
               required
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
               className={inputCls}
-              value={form.preco}
-              onChange={(e) => campo('preco', e.target.value)}
+              value={form.preco ? num(Number(form.preco)) : ''}
+              onChange={(e) => campo('preco', somenteDigitos(e.target.value))}
             />
           </Campo>
           <Campo label="Condomínio (R$)">
             <input
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
               className={inputCls}
-              value={form.condominio}
-              onChange={(e) => campo('condominio', e.target.value)}
+              value={form.condominio ? num(Number(form.condominio)) : ''}
+              onChange={(e) => campo('condominio', somenteDigitos(e.target.value))}
             />
           </Campo>
           <Campo label="IPTU (R$)">
             <input
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
               className={inputCls}
-              value={form.iptu}
-              onChange={(e) => campo('iptu', e.target.value)}
+              value={form.iptu ? num(Number(form.iptu)) : ''}
+              onChange={(e) => campo('iptu', somenteDigitos(e.target.value))}
             />
           </Campo>
         </div>

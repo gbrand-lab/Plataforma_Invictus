@@ -7,6 +7,7 @@ export { ImageUploader } from './ImageUploader';
 export { PdfUploader } from './PdfUploader';
 export { VideoUploader } from './VideoUploader';
 export { Foto } from './Foto';
+export { ImageLightbox } from './ImageLightbox';
 export { Reveal } from './Reveal';
 export { CardSkeleton, GridSkeleton } from './Skeleton';
 export { SectionHead, LinkArrow } from './SectionHead';

@@ -5,7 +5,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { money } from '@/lib/format';
 import { STATUS_LABEL, type ImovelAdmin } from './adminTypes';
-import { Tag } from '@/components/ui';
+import { Foto, ImageLightbox, Tag } from '@/components/ui';
+
+interface Galeria {
+  imagens: string[];
+  titulo: string;
+  indice: number;
+}
 
 interface ImoveisTableProps {
   imoveis: ImovelAdmin[];
@@ -18,6 +24,12 @@ interface ImoveisTableProps {
 export function ImoveisTable({ imoveis, baseHref = '/admin', mostrarCorretor = false }: ImoveisTableProps) {
   const router = useRouter();
   const [carregandoId, setCarregandoId] = useState<string | null>(null);
+  const [galeria, setGaleria] = useState<Galeria | null>(null);
+
+  function abrirGaleria(imovel: ImovelAdmin) {
+    if (imovel.imagens.length === 0) return;
+    setGaleria({ imagens: imovel.imagens, titulo: imovel.titulo, indice: 0 });
+  }
 
   async function excluir(id: string, titulo: string) {
     if (!confirm(`Excluir "${titulo}"? Essa ação não pode ser desfeita.`)) return;
@@ -51,9 +63,25 @@ export function ImoveisTable({ imoveis, baseHref = '/admin', mostrarCorretor = f
         {imoveis.map((imovel) => (
           <div key={imovel.id} className="p-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate font-medium text-ink">{imovel.titulo}</p>
-                <p className="text-[12px] text-muted">{imovel.ref}</p>
+              <div className="flex min-w-0 items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => abrirGaleria(imovel)}
+                  disabled={imovel.imagens.length === 0}
+                  aria-label={`Ver fotos de ${imovel.titulo}`}
+                  className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-line bg-ground"
+                >
+                  <Foto src={imovel.imagens[0]} alt="" sizes="48px" />
+                  {imovel.imagens.length > 1 ? (
+                    <span className="absolute inset-x-0 bottom-0 bg-ink/70 py-0.5 text-center text-[9px] font-semibold text-white">
+                      {imovel.imagens.length}
+                    </span>
+                  ) : null}
+                </button>
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-ink">{imovel.titulo}</p>
+                  <p className="text-[12px] text-muted">{imovel.ref}</p>
+                </div>
               </div>
               <Tag tone={imovel.status === 'published' ? 'dark' : 'wash'}>{STATUS_LABEL[imovel.status]}</Tag>
             </div>
@@ -101,8 +129,26 @@ export function ImoveisTable({ imoveis, baseHref = '/admin', mostrarCorretor = f
             {imoveis.map((imovel) => (
               <tr key={imovel.id} className="border-b border-line last:border-0">
                 <td className="px-4 py-3">
-                  <p className="font-medium text-ink">{imovel.titulo}</p>
-                  <p className="text-[12px] text-muted">{imovel.ref}</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => abrirGaleria(imovel)}
+                      disabled={imovel.imagens.length === 0}
+                      aria-label={`Ver fotos de ${imovel.titulo}`}
+                      className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-line bg-ground"
+                    >
+                      <Foto src={imovel.imagens[0]} alt="" sizes="44px" />
+                      {imovel.imagens.length > 1 ? (
+                        <span className="absolute inset-x-0 bottom-0 bg-ink/70 py-0.5 text-center text-[9px] font-semibold text-white">
+                          {imovel.imagens.length}
+                        </span>
+                      ) : null}
+                    </button>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-ink">{imovel.titulo}</p>
+                      <p className="text-[12px] text-muted">{imovel.ref}</p>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-ink2">
                   {imovel.bairro} · {imovel.cidade}
@@ -137,6 +183,20 @@ export function ImoveisTable({ imoveis, baseHref = '/admin', mostrarCorretor = f
           </tbody>
         </table>
       </div>
+
+      {galeria ? (
+        <ImageLightbox
+          imagens={galeria.imagens}
+          indice={galeria.indice}
+          titulo={galeria.titulo}
+          onFechar={() => setGaleria(null)}
+          onIr={(passo) =>
+            setGaleria((atual) =>
+              atual ? { ...atual, indice: (atual.indice + passo + atual.imagens.length) % atual.imagens.length } : atual,
+            )
+          }
+        />
+      ) : null}
     </div>
   );
 }

@@ -11,3 +11,5 @@ python-multipart>=0.0.20
 slowapi>=0.1.9
 pymupdf>=1.24
 cloudinary>=1.41
+pillow>=10.4
+pillow-heif>=0.18

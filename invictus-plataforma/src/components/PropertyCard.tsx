@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { Heart, MapPin } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Heart, MapPin } from 'lucide-react';
 import type { Imovel } from '@/lib/types';
 import { cx, finalidadeTag, money } from '@/lib/format';
 import { useFavoritosCtx } from '@/lib/favoritos-context';
@@ -20,7 +20,10 @@ interface PropertyCardProps {
 export function PropertyCard({ imovel, priority = false, className = '', hrefBase = '/imovel' }: PropertyCardProps) {
   const { isFavorito, alternar } = useFavoritosCtx();
   const [pulsar, setPulsar] = useState(false);
+  const [indice, setIndice] = useState(0);
   const favorito = isFavorito(imovel.id);
+  const temVariasFotos = imovel.imagens.length > 1;
+  const toqueX = useRef<number | null>(null);
 
   const favoritar = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,6 +35,25 @@ export function PropertyCard({ imovel, priority = false, className = '', hrefBas
     }
   };
 
+  /** Passa a foto sem navegar pra página do imóvel — pra andar (não abrir) usa preventDefault + stopPropagation. */
+  const passarFoto = (e: React.MouseEvent, passo: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIndice((atual) => (atual + passo + imovel.imagens.length) % imovel.imagens.length);
+  };
+
+  /** Arrastar o dedo (mobile) também troca a foto — sem precisar acertar as setas. */
+  const aoTocar = (e: React.TouchEvent) => {
+    toqueX.current = e.touches[0].clientX;
+  };
+  const aoSoltarToque = (e: React.TouchEvent) => {
+    if (toqueX.current == null || !temVariasFotos) return;
+    const delta = e.changedTouches[0].clientX - toqueX.current;
+    toqueX.current = null;
+    if (Math.abs(delta) < 40) return;
+    setIndice((atual) => (atual + (delta < 0 ? 1 : -1) + imovel.imagens.length) % imovel.imagens.length);
+  };
+
   return (
     <Link
       href={`${hrefBase}/${imovel.slug}`}
@@ -40,14 +62,51 @@ export function PropertyCard({ imovel, priority = false, className = '', hrefBas
         className,
       )}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-ground">
+      <div
+        className="relative aspect-[4/3] w-full overflow-hidden bg-ground"
+        onTouchStart={aoTocar}
+        onTouchEnd={aoSoltarToque}
+      >
         <Foto
-          src={imovel.imagens[0]}
-          alt={`${imovel.titulo} — ${imovel.bairro}, ${imovel.cidade}`}
+          src={imovel.imagens[indice]}
+          alt={`${imovel.titulo} — ${imovel.bairro}, ${imovel.cidade} — foto ${indice + 1}`}
           priority={priority}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
           className="transition-transform duration-[450ms] ease-invictus group-hover:scale-[1.035]"
         />
+
+        {temVariasFotos ? (
+          <>
+            <button
+              type="button"
+              onClick={(e) => passarFoto(e, -1)}
+              aria-label="Foto anterior"
+              className="absolute left-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-ink/40 text-white backdrop-blur-sm transition-colors duration-150 hover:bg-ink/65"
+            >
+              <ChevronLeft size={17} strokeWidth={2} />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => passarFoto(e, 1)}
+              aria-label="Próxima foto"
+              className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-ink/40 text-white backdrop-blur-sm transition-colors duration-150 hover:bg-ink/65"
+            >
+              <ChevronRight size={17} strokeWidth={2} />
+            </button>
+
+            <div className="absolute inset-x-0 bottom-2.5 flex items-center justify-center gap-1">
+              {imovel.imagens.map((_, i) => (
+                <span
+                  key={i}
+                  className={cx(
+                    'h-1.5 rounded-full bg-white shadow-[0_0_2px_rgba(0,0,0,.5)] transition-all duration-200',
+                    i === indice ? 'w-4 opacity-100' : 'w-1.5 opacity-60',
+                  )}
+                />
+              ))}
+            </div>
+          </>
+        ) : null}
 
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           <Tag tone="dark">{finalidadeTag(imovel.finalidade)}</Tag>

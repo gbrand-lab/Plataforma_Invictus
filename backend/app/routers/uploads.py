@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, stat
 from ..dependencies import get_current_user
 from ..limiter import limiter
 from ..models import Usuario
+from ..image import preparar_imagem
 from ..storage import salvar_imagem, salvar_video_arquivo
 from ..video import preparar_video
 
@@ -15,13 +16,14 @@ router = APIRouter(prefix="/uploads", tags=["uploads"])
 _TMP_DIR = Path(__file__).resolve().parent.parent.parent / "uploads" / "_tmp"
 _TMP_DIR.mkdir(parents=True, exist_ok=True)
 
-TIPOS_IMAGEM = {
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    "image/webp": ".webp",
-}
-TAMANHO_MAX_BYTES = 8 * 1024 * 1024
-MAX_ARQUIVOS = 20
+# HEIC/HEIF cobre foto de iPhone (formato padrão da Apple) — sem isso, boa parte das
+# fotos enviadas direto da galeria do iPhone seria rejeitada antes mesmo de tentar.
+TIPOS_IMAGEM = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
+# Bruto antes de comprimir — foto de celular moderno (48MP) passa de 15-20MB fácil.
+# Todo mundo vira JPEG comprimido depois (ver app/image.py), então isso é só a trava
+# de entrada, não o tamanho final guardado.
+TAMANHO_MAX_BYTES = 30 * 1024 * 1024
+MAX_ARQUIVOS = 30
 
 TAMANHO_MAX_PDF_BYTES = 40 * 1024 * 1024
 MAX_PAGINAS_PDF = 60
@@ -46,30 +48,46 @@ async def enviar_imagens(
     arquivos: list[UploadFile],
     _usuario: Usuario = Depends(get_current_user),
 ):
+    """
+    Sobe várias fotos de uma vez (celular manda tudo junto, inclusive HEIC do
+    iPhone). Cada foto é tratada isoladamente — se uma vier corrompida ou
+    grande demais, as outras continuam subindo normalmente; o que falhou
+    aparece em `erros` pro admin saber exatamente qual arquivo revisar.
+    """
     if not arquivos:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Envie ao menos uma imagem")
     if len(arquivos) > MAX_ARQUIVOS:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"No máximo {MAX_ARQUIVOS} imagens por vez")
 
     urls: list[str] = []
+    erros: list[dict[str, str]] = []
+
     for arquivo in arquivos:
-        extensao = TIPOS_IMAGEM.get(arquivo.content_type or "")
-        if not extensao:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Formato não suportado: {arquivo.filename}. Envie JPG, PNG ou WebP.",
-            )
+        nome = arquivo.filename or "arquivo"
+        tipo = arquivo.content_type or ""
+        # Tipo vazio (comum em alguns Android com HEIC) não é motivo pra rejeitar de cara —
+        # só barra quando o navegador mandou um tipo explícito e ele não é imagem conhecida.
+        if tipo and tipo not in TIPOS_IMAGEM:
+            erros.append({"arquivo": nome, "motivo": "Formato não suportado."})
+            continue
 
         conteudo = await arquivo.read()
         if len(conteudo) > TAMANHO_MAX_BYTES:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"{arquivo.filename} passa de 8 MB.",
-            )
+            erros.append({"arquivo": nome, "motivo": "Arquivo passa de 30 MB."})
+            continue
 
-        urls.append(salvar_imagem(conteudo, extensao, request))
+        try:
+            processada = preparar_imagem(conteudo)
+        except Exception:  # foto corrompida ou formato que o Pillow não decodifica
+            erros.append({"arquivo": nome, "motivo": "Não foi possível processar essa foto."})
+            continue
 
-    return {"urls": urls}
+        urls.append(salvar_imagem(processada, ".jpg", request))
+
+    if not urls and erros:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=erros[0]["motivo"])
+
+    return {"urls": urls, "erros": erros}
 
 
 @router.post("/pdf", status_code=status.HTTP_201_CREATED)

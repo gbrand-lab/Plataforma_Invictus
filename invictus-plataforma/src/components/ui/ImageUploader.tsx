@@ -11,9 +11,16 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-const TIPOS_IMAGEM = ['image/jpeg', 'image/png', 'image/webp'];
+// HEIC/HEIF cobre foto tirada direto do iPhone (formato padrão da Apple) — o backend converte.
+const TIPOS_IMAGEM = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
-async function enviarLote(url: string, formData: FormData): Promise<{ urls?: string[]; detail?: unknown }> {
+interface RespostaUpload {
+  urls?: string[];
+  erros?: { arquivo: string; motivo: string }[];
+  detail?: unknown;
+}
+
+async function enviarLote(url: string, formData: FormData): Promise<RespostaUpload> {
   const resposta = await fetch(url, { method: 'POST', body: formData });
   const dados = await resposta.json().catch(() => ({}));
   if (!resposta.ok) throw new Error(typeof dados.detail === 'string' ? dados.detail : 'Não foi possível enviar.');
@@ -28,10 +35,12 @@ export function ImageUploader({ value, onChange, className = '' }: ImageUploader
   const [erro, setErro] = useState('');
 
   async function enviarArquivos(lista: FileList | File[]) {
-    const imagens = Array.from(lista).filter((f) => TIPOS_IMAGEM.includes(f.type));
+    // Alguns celulares (principalmente Android com HEIC) não preenchem o `type` do arquivo —
+    // nesse caso deixa passar pro backend decidir, em vez de descartar silenciosamente.
+    const imagens = Array.from(lista).filter((f) => !f.type || TIPOS_IMAGEM.includes(f.type));
 
     if (imagens.length === 0) {
-      setErro('Envie imagens em JPG, PNG ou WebP.');
+      setErro('Envie imagens em JPG, PNG, WebP ou HEIC.');
       return;
     }
 
@@ -42,6 +51,14 @@ export function ImageUploader({ value, onChange, className = '' }: ImageUploader
       imagens.forEach((arquivo) => formData.append('arquivos', arquivo));
       const dados = await enviarLote('/api/uploads', formData);
       onChange([...value, ...(dados.urls ?? [])]);
+
+      if (dados.erros?.length) {
+        setErro(
+          dados.erros.length === imagens.length
+            ? 'Nenhuma foto pôde ser enviada. Confira o formato e o tamanho dos arquivos.'
+            : `${dados.erros.length} foto(s) não enviada(s): ${dados.erros.map((e) => e.arquivo).join(', ')}.`,
+        );
+      }
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível enviar. Confira sua conexão e tente de novo.');
     } finally {
@@ -83,11 +100,11 @@ export function ImageUploader({ value, onChange, className = '' }: ImageUploader
         <p className="text-[13.5px] font-medium text-ink">
           {enviando ? 'Enviando fotos...' : 'Arraste as fotos aqui ou clique para selecionar'}
         </p>
-        <p className="text-[12px] text-muted">JPG, PNG ou WebP (até 8 MB cada)</p>
+        <p className="text-[12px] text-muted">JPG, PNG, WebP ou HEIC (iPhone) · selecione várias de uma vez</p>
         <input
           ref={inputRef}
           type="file"
-          accept={TIPOS_IMAGEM.join(',')}
+          accept={[...TIPOS_IMAGEM, 'image/*'].join(',')}
           multiple
           className="hidden"
           onChange={(e) => {
