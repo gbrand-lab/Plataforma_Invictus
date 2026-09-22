@@ -7,13 +7,16 @@ URL salva no imóvel já é a do CDN (`res.cloudinary.com/...`). Sem credenciais
 sobrevive a um novo deploy, então em produção (Railway) configure o Cloudinary.
 """
 
+import logging
 import shutil
 import uuid
 from pathlib import Path
 
-from fastapi import Request
+from fastapi import HTTPException, Request, status
 
 from .config import settings
+
+logger = logging.getLogger("invictus.storage")
 
 _LOCAL_DIR = Path(__file__).resolve().parent.parent / "uploads" / "imoveis"
 _LOCAL_DIR.mkdir(parents=True, exist_ok=True)
@@ -39,17 +42,30 @@ def _configurar_cloudinary() -> None:
     _cloudinary_pronto = True
 
 
+def _erro_upload(exc: Exception, o_que: str) -> HTTPException:
+    """Loga a exceção de verdade (não some no meio do stack do ASGI) e devolve um erro claro pro cliente."""
+    logger.exception("Falha ao enviar %s pro Cloudinary", o_que)
+    return HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail=f"Não foi possível enviar {o_que} agora (armazenamento externo indisponível). "
+        f"Se persistir, avise o suporte: {exc}",
+    )
+
+
 def salvar_imagem(conteudo: bytes, extensao: str, request: Request) -> str:
     """Salva um arquivo de imagem já validado e devolve a URL pública."""
     if settings.cloudinary_configurado:
         import cloudinary.uploader
 
         _configurar_cloudinary()
-        resultado = cloudinary.uploader.upload(
-            conteudo,
-            folder="invictus/imoveis",
-            resource_type="image",
-        )
+        try:
+            resultado = cloudinary.uploader.upload(
+                conteudo,
+                folder="invictus/imoveis",
+                resource_type="image",
+            )
+        except Exception as exc:
+            raise _erro_upload(exc, "a imagem") from exc
         return resultado["secure_url"]
 
     nome = f"{uuid.uuid4().hex}{extensao}"
@@ -67,11 +83,14 @@ def salvar_video_arquivo(caminho: Path, request: Request) -> str:
         import cloudinary.uploader
 
         _configurar_cloudinary()
-        resultado = cloudinary.uploader.upload_large(
-            str(caminho),
-            folder="invictus/imoveis/videos",
-            resource_type="video",
-        )
+        try:
+            resultado = cloudinary.uploader.upload_large(
+                str(caminho),
+                folder="invictus/imoveis/videos",
+                resource_type="video",
+            )
+        except Exception as exc:
+            raise _erro_upload(exc, "o vídeo") from exc
         return resultado["secure_url"]
 
     nome = f"{uuid.uuid4().hex}{caminho.suffix}"
