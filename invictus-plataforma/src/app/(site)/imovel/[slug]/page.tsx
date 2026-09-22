@@ -60,7 +60,7 @@ function jsonLd(imovel: Imovel) {
     },
     address: {
       '@type': 'PostalAddress',
-      streetAddress: imovel.localizacaoAproximada ? imovel.bairro : imovel.endereco,
+      streetAddress: imovel.endereco,
       addressLocality: imovel.cidade,
       addressRegion: 'MA',
       addressCountry: 'BR',

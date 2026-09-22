@@ -1,7 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Info } from 'lucide-react';
+import { useMemo } from 'react';
 import type { Imovel } from '@/lib/types';
 
 interface Bloco {
@@ -11,11 +10,8 @@ interface Bloco {
   h: number;
 }
 
-/**
- * Mapa esquemático em SVG — fallback para imóveis sem coordenadas cadastradas
- * no admin (campos Latitude/Longitude), e para o modo "localização aproximada".
- */
-function MapaEsquematico({ imovel, aproximado }: { imovel: Imovel; aproximado: boolean }) {
+/** Mapa esquemático em SVG — fallback para imóveis sem coordenadas cadastradas no admin (Latitude/Longitude). */
+function MapaEsquematico({ imovel }: { imovel: Imovel }) {
   const blocos = useMemo<Bloco[]>(() => {
     const saida: Bloco[] = [];
     // imovel.id é um UUID (string) — deriva uma seed numérica dele para o padrão pseudo-aleatório.
@@ -63,32 +59,15 @@ function MapaEsquematico({ imovel, aproximado }: { imovel: Imovel; aproximado: b
       ))}
       <path d="M0 352 h800" stroke="#E8C9A6" strokeWidth="10" />
 
-      {aproximado ? (
-        <>
-          <circle cx="400" cy="215" r="108" fill="#ED6A1F" opacity="0.12" />
-          <circle cx="400" cy="215" r="108" fill="none" stroke="#ED6A1F" strokeWidth="2.5" strokeDasharray="7 6" />
-          <circle cx="400" cy="215" r="7" fill="#ED6A1F" />
-        </>
-      ) : (
-        <>
-          <path d="M400 240 c-16-22-26-34-26-48a26 26 0 0 1 52 0c0 14-10 26-26 48Z" fill="#ED6A1F" />
-          <circle cx="400" cy="192" r="9" fill="#FFF" />
-        </>
-      )}
+      <path d="M400 240 c-16-22-26-34-26-48a26 26 0 0 1 52 0c0 14-10 26-26 48Z" fill="#ED6A1F" />
+      <circle cx="400" cy="192" r="9" fill="#FFF" />
     </svg>
   );
 }
 
-/**
- * Embed real do Google Maps (iframe público, sem API key) a partir de lat/lng
- * cadastrados no admin. Em modo aproximado, centraliza no ponto mas com zoom
- * menor — não usamos aqui um pino exato, só a região.
- */
-function MapaGoogle({ lat, lng, aproximado }: { lat: number; lng: number; aproximado: boolean }) {
-  const zoom = aproximado ? 14 : 16;
-  const src = aproximado
-    ? `https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`
-    : `https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed&markers=${lat},${lng}`;
+/** Embed real do Google Maps (iframe público, sem API key) a partir de lat/lng cadastrados no admin. */
+function MapaGoogle({ lat, lng }: { lat: number; lng: number }) {
+  const src = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed&markers=${lat},${lng}`;
 
   return (
     <iframe
@@ -102,52 +81,30 @@ function MapaGoogle({ lat, lng, aproximado }: { lat: number; lng: number; aproxi
 }
 
 export function PropertyLocation({ imovel }: { imovel: Imovel }) {
-  const [aproximado, setAproximado] = useState(imovel.localizacaoAproximada);
-
   const temCoordenadas = Boolean(imovel.lat && imovel.lng);
 
   return (
     <section className="mt-10">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-[20px] font-semibold tracking-[-0.015em] text-ink">Onde fica</h2>
-          <p className="mt-1.5 text-[14px] text-ink2">
-            {imovel.bairro} · {imovel.cidade}/MA
-          </p>
-        </div>
-        <label htmlFor="mapa-aprox" className="inline-flex cursor-pointer items-center gap-2 text-[13px] text-ink2">
-          <input
-            id="mapa-aprox"
-            type="checkbox"
-            checked={aproximado}
-            onChange={(e) => setAproximado(e.target.checked)}
-            className="h-4 w-4 accent-[#ED6A1F]"
-          />
-          Mostrar localização aproximada
-        </label>
+      <div>
+        <h2 className="text-[20px] font-semibold tracking-[-0.015em] text-ink">Onde fica</h2>
+        <p className="mt-1.5 text-[14px] text-ink2">
+          {imovel.bairro} · {imovel.cidade}/MA
+        </p>
       </div>
 
       <div className="relative mt-4 overflow-hidden rounded-2xl border border-line bg-[#EFEDE8]">
         {temCoordenadas ? (
-          <MapaGoogle lat={imovel.lat} lng={imovel.lng} aproximado={aproximado} />
+          <MapaGoogle lat={imovel.lat} lng={imovel.lng} />
         ) : (
-          <MapaEsquematico imovel={imovel} aproximado={aproximado} />
+          <MapaEsquematico imovel={imovel} />
         )}
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-white/85 to-transparent px-4 pb-3 pt-10">
           <p className="text-[12.5px] font-medium text-ink2">
-            {aproximado
-              ? 'Localização aproximada — o endereço exato é informado no atendimento.'
-              : `${imovel.endereco} — ${imovel.bairro}`}
+            {imovel.endereco} — {imovel.bairro}
           </p>
         </div>
       </div>
-
-      <p className="mt-2.5 flex items-start gap-2 text-[12.5px] leading-relaxed text-muted">
-        <Info size={14} strokeWidth={1.6} className="mt-px shrink-0" />
-        Por segurança e por acordo com o proprietário, alguns imóveis exibem apenas o raio aproximado. O endereço
-        completo é enviado no atendimento.
-      </p>
     </section>
   );
 }

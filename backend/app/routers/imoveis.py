@@ -18,17 +18,8 @@ def _escapar_like(termo: str) -> str:
 
 
 def _serializar_publico(imovel: Imovel) -> ImovelPublicoOut:
-    """
-    Nunca inclui contato/corretor; some com o endereço exato (texto) quando a
-    localização é aproximada — mas mantém lat/lng, que o frontend usa pra
-    centralizar o mapa mesmo no modo aproximado (só com um raio, sem pino
-    exato). Zerar lat/lng também faria o site cair no mapa esquemático
-    genérico em vez do Google Maps de verdade.
-    """
-    dados = ImovelPublicoOut.model_validate(imovel).model_dump()
-    if imovel.localizacao_aproximada:
-        dados["endereco"] = None
-    return ImovelPublicoOut(**dados)
+    """Uso público — nunca inclui contato/corretor (ver ImovelPublicoOut); localização sempre exata."""
+    return ImovelPublicoOut.model_validate(imovel)
 
 
 # ---------- Público ----------

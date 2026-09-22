@@ -144,11 +144,7 @@ class ImovelOut(ImovelBase):
 
 
 class ImovelPublicoOut(BaseModel):
-    """Uso público (site + /parceiros) — sem contato do corretor nem quem cadastrou.
-
-    `endereco`/`lat`/`lng` são omitidos pelo endpoint quando `localizacao_aproximada`
-    for True (ver routers/imoveis.py); aqui ficam Optional para permitir isso.
-    """
+    """Uso público (site + /parceiros) — sem contato do corretor nem quem cadastrou."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -165,10 +161,9 @@ class ImovelPublicoOut(BaseModel):
     iptu: float
     cidade: str
     bairro: str
-    endereco: str | None = None
+    endereco: str
     lat: float | None = None
     lng: float | None = None
-    localizacao_aproximada: bool
     quartos: int
     suites: int
     banheiros: int

@@ -53,12 +53,13 @@ export function ImageLightbox({ imagens, indice, titulo, onFechar, onIr }: Image
         </div>
       </header>
 
-      <div className="relative flex flex-1 items-center justify-center px-3 pb-3 sm:px-16">
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden px-3 pb-3 sm:px-16">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imagens[indice]}
           alt={`${titulo} — foto ${indice + 1}`}
-          className="max-h-full max-w-full rounded-xl object-contain"
+          className="rounded-xl object-contain"
+          style={{ maxHeight: '80vh', maxWidth: '90vw', width: 'auto', height: 'auto' }}
         />
         {imagens.length > 1 ? (
           <>

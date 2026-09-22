@@ -145,7 +145,6 @@ function mapImovel(raw: any): Imovel {
     endereco: raw.endereco,
     lat: raw.lat ?? 0,
     lng: raw.lng ?? 0,
-    localizacaoAproximada: raw.localizacao_aproximada,
     quartos: raw.quartos,
     suites: raw.suites,
     banheiros: raw.banheiros,

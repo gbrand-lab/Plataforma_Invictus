@@ -38,8 +38,6 @@ export interface Imovel {
   endereco: string;
   lat: number;
   lng: number;
-  /** Quando true, a página exibe apenas o raio aproximado no mapa. */
-  localizacaoAproximada: boolean;
 
   quartos: number;
   suites: number;

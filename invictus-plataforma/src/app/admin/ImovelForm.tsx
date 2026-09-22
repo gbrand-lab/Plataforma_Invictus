@@ -22,7 +22,6 @@ type FormState = {
   endereco: string;
   lat: string;
   lng: string;
-  localizacao_aproximada: boolean;
   quartos: string;
   suites: string;
   banheiros: string;
@@ -54,7 +53,6 @@ function paraFormState(imovel?: ImovelAdmin): FormState {
     endereco: imovel?.endereco ?? '',
     lat: imovel?.lat != null ? String(imovel.lat) : '',
     lng: imovel?.lng != null ? String(imovel.lng) : '',
-    localizacao_aproximada: imovel?.localizacao_aproximada ?? true,
     quartos: imovel ? String(imovel.quartos) : '0',
     suites: imovel ? String(imovel.suites) : '0',
     banheiros: imovel ? String(imovel.banheiros) : '0',
@@ -125,7 +123,6 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
       endereco: form.endereco,
       lat: form.lat ? Number(form.lat) : null,
       lng: form.lng ? Number(form.lng) : null,
-      localizacao_aproximada: form.localizacao_aproximada,
       quartos: Number(form.quartos) || 0,
       suites: Number(form.suites) || 0,
       banheiros: Number(form.banheiros) || 0,
@@ -321,14 +318,6 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
             lng={form.lng}
             onSelecionar={(lat, lng) => setForm((atual) => ({ ...atual, lat, lng }))}
           />
-          <label className="mt-3 flex items-center gap-2 text-[13.5px] text-ink2">
-            <input
-              type="checkbox"
-              checked={form.localizacao_aproximada}
-              onChange={(e) => campo('localizacao_aproximada', e.target.checked)}
-            />
-            Mostrar só localização aproximada no site (raio, sem pino exato)
-          </label>
         </div>
       </section>
 
