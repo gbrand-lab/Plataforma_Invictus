@@ -28,6 +28,8 @@ export interface ImovelAdmin {
   banheiros: number;
   vagas: number;
   area: number;
+  area_construida: number;
+  area_total: number;
   caracteristicas: string[];
   imagens: string[];
   videos: Video[];
@@ -61,5 +63,4 @@ export const STATUS_LABEL: Record<StatusImovel, string> = {
   published: 'Publicado',
   sold: 'Vendido',
   rented: 'Alugado',
-  inactive: 'Inativo',
 };

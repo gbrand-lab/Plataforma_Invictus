@@ -4,8 +4,8 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 Finalidade = Literal["venda", "aluguel", "repasse"]
-Categoria = Literal["apartamento", "casa", "terreno", "comercial"]
-StatusImovel = Literal["draft", "pending", "published", "sold", "rented", "inactive"]
+Categoria = Literal["apartamento", "casa_solta", "casa_condominio", "terreno", "comercial"]
+StatusImovel = Literal["draft", "pending", "published", "sold", "rented"]
 
 
 class Video(BaseModel):
@@ -69,7 +69,9 @@ class ImovelBase(BaseModel):
     suites: int = 0
     banheiros: int = 0
     vagas: int = 0
-    area: float = Field(ge=0)
+    area: float = Field(ge=0, default=0)
+    area_construida: float = Field(ge=0, default=0)
+    area_total: float = Field(ge=0, default=0)
     caracteristicas: list[str] = []
     imagens: list[str] = []
     videos: list[Video] = []
@@ -114,6 +116,8 @@ class ImovelUpdate(BaseModel):
     banheiros: int | None = None
     vagas: int | None = None
     area: float | None = None
+    area_construida: float | None = None
+    area_total: float | None = None
     caracteristicas: list[str] | None = None
     imagens: list[str] | None = None
     videos: list[Video] | None = None
@@ -169,6 +173,8 @@ class ImovelPublicoOut(BaseModel):
     banheiros: int
     vagas: int
     area: float
+    area_construida: float = 0
+    area_total: float = 0
     caracteristicas: list[str] = []
     imagens: list[str] = []
     videos: list[Video] = []

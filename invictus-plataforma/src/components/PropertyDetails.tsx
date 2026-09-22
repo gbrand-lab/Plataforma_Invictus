@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Eye } from 'lucide-react';
 import { CATEGORIAS } from '@/lib/data';
-import { cx, dataBR, money, num, plural } from '@/lib/format';
+import { cx, dataBR, isCasa, money, num, plural } from '@/lib/format';
 import type { Imovel } from '@/lib/types';
 
 const LIMITE_RESUMO = 260;
@@ -13,13 +13,14 @@ export function PropertyDetails({ imovel }: { imovel: Imovel }) {
   const [aberta, setAberta] = useState(false);
   const longa = imovel.descricao.length > LIMITE_RESUMO;
   const categoria = CATEGORIAS.find((c) => c.id === imovel.categoria)?.label ?? 'Imóvel';
+  const casa = isCasa(imovel.categoria);
 
   const resumo: [string, string][] = [];
   if (imovel.quartos) resumo.push([String(imovel.quartos), plural(imovel.quartos, 'quarto', 'quartos').split(' ')[1]]);
   if (imovel.suites) resumo.push([String(imovel.suites), imovel.suites > 1 ? 'suítes' : 'suíte']);
   if (imovel.banheiros) resumo.push([String(imovel.banheiros), imovel.banheiros > 1 ? 'banheiros' : 'banheiro']);
   if (imovel.vagas) resumo.push([String(imovel.vagas), imovel.vagas > 1 ? 'vagas' : 'vaga']);
-  resumo.push([num(imovel.area), 'm² de área']);
+  if (imovel.area) resumo.push([num(imovel.area), 'm² de área']);
 
   const ficha: [string, string][] = [
     ['Tipo', categoria],
@@ -29,7 +30,14 @@ export function PropertyDetails({ imovel }: { imovel: Imovel }) {
     ],
     ['Condomínio', imovel.condominio ? `${money(imovel.condominio)}/mês` : 'Não há'],
     ['IPTU', imovel.iptu ? `${money(imovel.iptu)}/mês` : 'Isento'],
-    ['Área privativa', `${num(imovel.area)} m²`],
+    ...(casa
+      ? ([
+          ...(imovel.areaConstruida ? [['Área construída', `${num(imovel.areaConstruida)} m²`] as [string, string]] : []),
+          ...(imovel.areaTotal ? [['Área do terreno', `${num(imovel.areaTotal)} m²`] as [string, string]] : []),
+        ] as [string, string][])
+      : imovel.area
+        ? ([['Área privativa', `${num(imovel.area)} m²`]] as [string, string][])
+        : []),
     ['Publicado em', dataBR(imovel.publicadoEm)],
   ];
 

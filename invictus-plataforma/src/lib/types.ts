@@ -5,9 +5,9 @@
 
 export type Finalidade = 'venda' | 'aluguel' | 'repasse';
 
-export type Categoria = 'apartamento' | 'casa' | 'terreno' | 'comercial';
+export type Categoria = 'apartamento' | 'casa_solta' | 'casa_condominio' | 'terreno' | 'comercial';
 
-export type StatusImovel = 'draft' | 'pending' | 'published' | 'sold' | 'rented' | 'inactive';
+export type StatusImovel = 'draft' | 'pending' | 'published' | 'sold' | 'rented';
 
 export type Ordenacao = 'recentes' | 'menor' | 'maior' | 'area';
 
@@ -43,8 +43,12 @@ export interface Imovel {
   suites: number;
   banheiros: number;
   vagas: number;
-  /** Área privativa em m². */
+  /** Área privativa em m² (apartamento/terreno/comercial). Opcional — 0 quando não informada. */
   area: number;
+  /** Só para casa solta/condomínio. Opcional — 0 quando não informada. */
+  areaConstruida: number;
+  /** Só para casa solta/condomínio. Opcional — 0 quando não informada. */
+  areaTotal: number;
 
   caracteristicas: string[];
   imagens: string[];

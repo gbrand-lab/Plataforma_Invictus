@@ -163,7 +163,8 @@ export function PropertyView({ imovel, relacionados }: PropertyViewProps) {
               ) : null}
             </p>
             <p className="truncate text-[12px] text-muted">
-              {imovel.bairro} · {num(imovel.area)} m²
+              {imovel.bairro}
+              {imovel.area ? ` · ${num(imovel.area)} m²` : ''}
             </p>
           </div>
           <WhatsAppCTA

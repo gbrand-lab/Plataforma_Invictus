@@ -85,7 +85,7 @@ export function PartnerPropertyView({ imovel, relacionados }: PartnerPropertyVie
       ) : null}
 
       <p className="mx-auto mt-4 max-w-[1240px] px-5 text-[12px] text-muted sm:px-7">
-        {num(imovel.area)} m² · Consulta de catálogo — sem contato direto nesta página.
+        {imovel.area ? `${num(imovel.area)} m² · ` : ''}Consulta de catálogo — sem contato direto nesta página.
       </p>
     </article>
   );

@@ -86,7 +86,7 @@ export function CategoryCards() {
                 <span className="mb-3 inline-grid h-9 w-9 place-items-center rounded-lg bg-white/10 text-white backdrop-blur-sm">
                   <c.Icone size={18} strokeWidth={1.6} />
                 </span>
-                <h3 className="text-[20px] font-semibold tracking-[-0.01em] text-white">{c.titulo}</h3>
+                <h3 className="text-[20px] font-semibold uppercase tracking-[0.01em] text-white">{c.titulo}</h3>
                 <p className="mt-1 max-w-[26ch] text-[13.5px] leading-snug text-white/70">{c.texto}</p>
                 <span className="mt-3.5 inline-flex items-center gap-2 text-[13.5px] font-medium text-white">
                   {c.cta}

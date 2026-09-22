@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BAIRROS, CARACTERISTICAS, CATEGORIAS, CIDADES } from '@/lib/data';
 import { Campo, ImageUploader, PdfUploader, VideoUploader, inputCls, selectCls, selectStyle } from '@/components/ui';
-import { cx, num, somenteDigitos } from '@/lib/format';
-import type { Video } from '@/lib/types';
+import { cx, isCasa, num, somenteDigitos } from '@/lib/format';
+import type { Categoria, Video } from '@/lib/types';
 import type { ImovelAdmin } from './adminTypes';
 import { LocationPicker } from './LocationPicker';
 
@@ -13,7 +13,7 @@ type FormState = {
   titulo: string;
   descricao: string;
   finalidade: 'venda' | 'aluguel' | 'repasse';
-  categoria: string;
+  categoria: Categoria;
   preco: string;
   condominio: string;
   iptu: string;
@@ -27,6 +27,9 @@ type FormState = {
   banheiros: string;
   vagas: string;
   area: string;
+  areaConstruida: string;
+  areaTotal: string;
+  cep: string;
   caracteristicas: string[];
   imagens: string[];
   video: Video | null;
@@ -57,7 +60,10 @@ function paraFormState(imovel?: ImovelAdmin): FormState {
     suites: imovel ? String(imovel.suites) : '0',
     banheiros: imovel ? String(imovel.banheiros) : '0',
     vagas: imovel ? String(imovel.vagas) : '0',
-    area: imovel ? String(imovel.area) : '',
+    area: imovel?.area ? String(imovel.area) : '',
+    areaConstruida: imovel?.area_construida ? String(imovel.area_construida) : '',
+    areaTotal: imovel?.area_total ? String(imovel.area_total) : '',
+    cep: '',
     caracteristicas: imovel?.caracteristicas ?? [],
     imagens: imovel?.imagens ?? [],
     video: imovel?.videos?.[0] ?? null,
@@ -85,9 +91,42 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
   const [erro, setErro] = useState('');
 
   const editando = Boolean(imovel);
+  const casa = isCasa(form.categoria);
+
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [erroCep, setErroCep] = useState('');
 
   function campo<K extends keyof FormState>(key: K, valor: FormState[K]) {
     setForm((atual) => ({ ...atual, [key]: valor }));
+  }
+
+  /** Busca opcional — só preenche bairro/endereço a partir do CEP; nunca bloqueia o cadastro. */
+  async function buscarCep() {
+    const cep = somenteDigitos(form.cep);
+    if (cep.length !== 8) {
+      setErroCep('CEP inválido.');
+      return;
+    }
+    setBuscandoCep(true);
+    setErroCep('');
+    try {
+      const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const dados = await resposta.json();
+      if (!resposta.ok || dados.erro) {
+        setErroCep('CEP não encontrado.');
+        return;
+      }
+      setForm((atual) => ({
+        ...atual,
+        bairro: dados.bairro || atual.bairro,
+        endereco: dados.logradouro || atual.endereco,
+        cidade: CIDADES.find((c) => c.toLowerCase() === String(dados.localidade).toLowerCase()) ?? atual.cidade,
+      }));
+    } catch {
+      setErroCep('Não foi possível buscar o CEP agora.');
+    } finally {
+      setBuscandoCep(false);
+    }
   }
 
   function alternarCaracteristica(nome: string) {
@@ -110,6 +149,12 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
 
     setSalvando(true);
 
+    const areaConstruida = Number(form.areaConstruida) || 0;
+    const areaTotal = Number(form.areaTotal) || 0;
+    // Casa não usa o campo genérico de área — a "área de destaque" (busca, ordenação, cards)
+    // vira a construída (com fallback pra total) pra continuar comparável com as outras categorias.
+    const area = casa ? areaConstruida || areaTotal || 0 : Number(form.area) || 0;
+
     const payload = {
       titulo: form.titulo,
       descricao: form.descricao,
@@ -127,7 +172,9 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
       suites: Number(form.suites) || 0,
       banheiros: Number(form.banheiros) || 0,
       vagas: Number(form.vagas) || 0,
-      area: Number(form.area) || 0,
+      area,
+      area_construida: casa ? areaConstruida : 0,
+      area_total: casa ? areaTotal : 0,
       caracteristicas: form.caracteristicas,
       imagens: form.imagens,
       videos: form.video ? [form.video] : [],
@@ -209,7 +256,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
               className={selectCls}
               style={selectStyle}
               value={form.categoria}
-              onChange={(e) => campo('categoria', e.target.value)}
+              onChange={(e) => campo('categoria', e.target.value as Categoria)}
             >
               {CATEGORIAS.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -231,7 +278,6 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
                 <option value="published">Publicado</option>
                 <option value="sold">Vendido</option>
                 <option value="rented">Alugado</option>
-                <option value="inactive">Inativo</option>
               </select>
             </Campo>
           ) : null}
@@ -268,6 +314,32 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
 
       <section className="rounded-2xl border border-line bg-white p-5">
         <h2 className="text-[14px] font-semibold text-ink">Localização</h2>
+
+        <div className="mt-4">
+          <Campo label="CEP (opcional)">
+            <div className="flex gap-2">
+              <input
+                className={inputCls}
+                placeholder="00000-000"
+                maxLength={9}
+                value={form.cep}
+                onChange={(e) => campo('cep', e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), buscarCep())}
+              />
+              <button
+                type="button"
+                onClick={buscarCep}
+                disabled={buscandoCep}
+                className="h-11 shrink-0 rounded-xl border border-line bg-white px-4 text-[13.5px] font-semibold text-ink transition-colors hover:border-ink/30 disabled:opacity-60"
+              >
+                {buscandoCep ? 'Buscando...' : 'Buscar'}
+              </button>
+            </div>
+          </Campo>
+          {erroCep && <p className="mt-1.5 text-[12.5px] font-medium text-brandDeep">{erroCep}</p>}
+          <p className="mt-1.5 text-[12px] text-muted">Preenche bairro e endereço automaticamente — não é obrigatório.</p>
+        </div>
+
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Campo label="Cidade">
             <select
@@ -364,16 +436,38 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
               onChange={(e) => campo('vagas', e.target.value)}
             />
           </Campo>
-          <Campo label="Área (m²)">
-            <input
-              required
-              type="number"
-              min={0}
-              className={inputCls}
-              value={form.area}
-              onChange={(e) => campo('area', e.target.value)}
-            />
-          </Campo>
+          {casa ? (
+            <>
+              <Campo label="Área construída (m²)">
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  value={form.areaConstruida}
+                  onChange={(e) => campo('areaConstruida', e.target.value)}
+                />
+              </Campo>
+              <Campo label="Área total do terreno (m²)">
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  value={form.areaTotal}
+                  onChange={(e) => campo('areaTotal', e.target.value)}
+                />
+              </Campo>
+            </>
+          ) : (
+            <Campo label="Área (m²)">
+              <input
+                type="number"
+                min={0}
+                className={inputCls}
+                value={form.area}
+                onChange={(e) => campo('area', e.target.value)}
+              />
+            </Campo>
+          )}
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">

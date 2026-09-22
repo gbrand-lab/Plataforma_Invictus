@@ -1,4 +1,4 @@
-import type { Finalidade } from './types';
+import type { Categoria, Finalidade } from './types';
 
 const brl = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -33,3 +33,6 @@ export const somenteDigitos = (v: string): string => v.replace(/\D/g, '');
 /** Rótulo curto de tag — "Venda" / "Aluguel" / "Repasse". */
 export const finalidadeTag = (f: Finalidade): string =>
   ({ venda: 'Venda', aluguel: 'Aluguel', repasse: 'Repasse' })[f];
+
+export const isCasa = (categoria: Categoria): boolean =>
+  categoria === 'casa_solta' || categoria === 'casa_condominio';

@@ -70,7 +70,7 @@ class Imovel(Base):
     descricao: Mapped[str] = mapped_column(Text)
 
     finalidade: Mapped[str] = mapped_column(String(10))  # venda | aluguel | repasse
-    categoria: Mapped[str] = mapped_column(String(20))  # apartamento | casa | terreno | comercial
+    categoria: Mapped[str] = mapped_column(String(20))  # apartamento | casa_solta | casa_condominio | terreno | comercial
 
     preco: Mapped[float] = mapped_column(Float)
     condominio: Mapped[float] = mapped_column(Float, default=0)
@@ -87,7 +87,10 @@ class Imovel(Base):
     suites: Mapped[int] = mapped_column(Integer, default=0)
     banheiros: Mapped[int] = mapped_column(Integer, default=0)
     vagas: Mapped[int] = mapped_column(Integer, default=0)
-    area: Mapped[float] = mapped_column(Float)
+    area: Mapped[float] = mapped_column(Float, default=0)
+    # Só em casa solta/condomínio — o admin escolhe a categoria antes de saber a área.
+    area_construida: Mapped[float] = mapped_column(Float, default=0)
+    area_total: Mapped[float] = mapped_column(Float, default=0)
 
     caracteristicas: Mapped[list] = mapped_column(JSON, default=list)
     imagens: Mapped[list] = mapped_column(JSON, default=list)
@@ -99,7 +102,7 @@ class Imovel(Base):
     whatsapp: Mapped[str | None] = mapped_column(String(30), nullable=True)
 
     publicado_em: Mapped[date] = mapped_column(Date, default=date.today)
-    # draft | pending | published | sold | rented | inactive
+    # draft | pending | published | sold | rented
     status: Mapped[str] = mapped_column(String(20), default="draft")
     destaque: Mapped[bool] = mapped_column(Boolean, default=False)
     na_chave: Mapped[bool] = mapped_column(Boolean, default=False)

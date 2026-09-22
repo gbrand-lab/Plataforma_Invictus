@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const titulo = `${imovel.titulo} — ${money(imovel.preco)}`;
   const descricao = `${imovel.titulo} em ${imovel.bairro}, ${imovel.cidade}/MA. ${
     imovel.quartos ? `${imovel.quartos} quartos, ` : ''
-  }${imovel.area} m². ${
+  }${imovel.area ? `${imovel.area} m². ` : ''}${
     imovel.finalidade === 'venda' ? 'À venda por ' : imovel.finalidade === 'aluguel' ? 'Aluguel de ' : 'Repasse por '
   }${money(imovel.preco)}.`;
 
@@ -67,7 +67,7 @@ function jsonLd(imovel: Imovel) {
     },
     numberOfRooms: imovel.quartos,
     numberOfBathroomsTotal: imovel.banheiros,
-    floorSize: { '@type': 'QuantitativeValue', value: imovel.area, unitCode: 'MTK' },
+    ...(imovel.area ? { floorSize: { '@type': 'QuantitativeValue', value: imovel.area, unitCode: 'MTK' } } : {}),
   };
 }
 

@@ -10,7 +10,8 @@ import type { Categoria, Depoimento, Filtro, Imovel, Ordenacao } from './types';
 
 export const CATEGORIAS: { id: Categoria; label: string }[] = [
   { id: 'apartamento', label: 'Apartamento' },
-  { id: 'casa', label: 'Casa' },
+  { id: 'casa_solta', label: 'Casa solta' },
+  { id: 'casa_condominio', label: 'Casa em condomínio' },
   { id: 'terreno', label: 'Terreno' },
   { id: 'comercial', label: 'Comercial' },
 ];
@@ -149,7 +150,9 @@ function mapImovel(raw: any): Imovel {
     suites: raw.suites,
     banheiros: raw.banheiros,
     vagas: raw.vagas,
-    area: raw.area,
+    area: raw.area ?? 0,
+    areaConstruida: raw.area_construida ?? 0,
+    areaTotal: raw.area_total ?? 0,
     caracteristicas: raw.caracteristicas ?? [],
     imagens: raw.imagens ?? [],
     videos: raw.videos ?? [],

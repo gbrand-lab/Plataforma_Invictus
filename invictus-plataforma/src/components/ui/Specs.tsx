@@ -23,7 +23,7 @@ export function Specs({
   if (imovel.quartos) itens.push([BedDouble, plural(imovel.quartos, 'quarto', 'quartos')]);
   if (imovel.banheiros) itens.push([Bath, plural(imovel.banheiros, 'banheiro', 'banheiros')]);
   if (imovel.vagas) itens.push([Car, plural(imovel.vagas, 'vaga', 'vagas')]);
-  itens.push([Ruler, `${num(imovel.area)} m²`]);
+  if (imovel.area) itens.push([Ruler, `${num(imovel.area)} m²`]);
 
   return (
     <ul
