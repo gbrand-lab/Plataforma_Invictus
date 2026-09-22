@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { cx } from '@/lib/format';
@@ -13,8 +13,24 @@ interface ImageLightboxProps {
   onIr: (passo: number) => void;
 }
 
+/** Bem baixo de propósito — é só pra diferenciar de um toque/clique parado, não pra exigir um "puxão". */
+const LIMIAR_ARRASTE = 24;
+
 /** Visualizador de fotos em tela cheia — usado na página do imóvel e em qualquer lista que precise mostrar fotos sem navegar até lá. */
 export function ImageLightbox({ imagens, indice, titulo, onFechar, onIr }: ImageLightboxProps) {
+  const inicioX = useRef<number | null>(null);
+
+  const aoPressionar = (e: React.PointerEvent) => {
+    inicioX.current = e.clientX;
+  };
+  const aoSoltar = (e: React.PointerEvent) => {
+    if (inicioX.current == null || imagens.length < 2) return;
+    const delta = e.clientX - inicioX.current;
+    inicioX.current = null;
+    if (Math.abs(delta) < LIMIAR_ARRASTE) return;
+    onIr(delta < 0 ? 1 : -1);
+  };
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onFechar();
@@ -53,12 +69,17 @@ export function ImageLightbox({ imagens, indice, titulo, onFechar, onIr }: Image
         </div>
       </header>
 
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden px-3 pb-3 sm:px-16">
+      <div
+        className="relative flex flex-1 cursor-grab touch-pan-y items-center justify-center overflow-hidden px-3 pb-3 active:cursor-grabbing sm:px-16"
+        onPointerDown={aoPressionar}
+        onPointerUp={aoSoltar}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imagens[indice]}
           alt={`${titulo} — foto ${indice + 1}`}
-          className="rounded-xl object-contain"
+          draggable={false}
+          className="select-none rounded-xl object-contain"
           style={{ maxHeight: '80vh', maxWidth: '90vw', width: 'auto', height: 'auto' }}
         />
         {imagens.length > 1 ? (

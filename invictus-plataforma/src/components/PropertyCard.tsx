@@ -8,6 +8,9 @@ import { cx, finalidadeTag, money } from '@/lib/format';
 import { useFavoritosCtx } from '@/lib/favoritos-context';
 import { Foto, Specs, Tag } from './ui';
 
+/** Bem baixo de propósito — é só pra diferenciar de um toque/clique parado, não pra exigir um "puxão". */
+const LIMIAR_ARRASTE = 24;
+
 interface PropertyCardProps {
   imovel: Imovel;
   /** Primeiras imagens da página recebem carregamento prioritário (LCP). */
@@ -24,6 +27,7 @@ export function PropertyCard({ imovel, priority = false, className = '', hrefBas
   const favorito = isFavorito(imovel.id);
   const temVariasFotos = imovel.imagens.length > 1;
   const toqueX = useRef<number | null>(null);
+  const arrastou = useRef(false);
 
   const favoritar = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -42,30 +46,40 @@ export function PropertyCard({ imovel, priority = false, className = '', hrefBas
     setIndice((atual) => (atual + passo + imovel.imagens.length) % imovel.imagens.length);
   };
 
-  /** Arrastar o dedo (mobile) também troca a foto — sem precisar acertar as setas. */
-  const aoTocar = (e: React.TouchEvent) => {
-    toqueX.current = e.touches[0].clientX;
+  /** Arrastar (mouse ou dedo) também troca a foto — sensibilidade baixa de propósito, não precisa de esforço. */
+  const aoPressionar = (e: React.PointerEvent) => {
+    toqueX.current = e.clientX;
   };
-  const aoSoltarToque = (e: React.TouchEvent) => {
+  const aoSoltar = (e: React.PointerEvent) => {
     if (toqueX.current == null || !temVariasFotos) return;
-    const delta = e.changedTouches[0].clientX - toqueX.current;
+    const delta = e.clientX - toqueX.current;
     toqueX.current = null;
-    if (Math.abs(delta) < 40) return;
+    if (Math.abs(delta) < LIMIAR_ARRASTE) return;
+    arrastou.current = true;
     setIndice((atual) => (atual + (delta < 0 ? 1 : -1) + imovel.imagens.length) % imovel.imagens.length);
+  };
+
+  /** Depois de um arraste (mouse), o navegador ainda dispara um clique no link — barra só esse. */
+  const aoClicarCard = (e: React.MouseEvent) => {
+    if (arrastou.current) {
+      e.preventDefault();
+      arrastou.current = false;
+    }
   };
 
   return (
     <Link
       href={`${hrefBase}/${imovel.slug}`}
+      onClick={aoClicarCard}
       className={cx(
         'group flex flex-col overflow-hidden rounded-2xl border border-line bg-white text-left transition-all duration-300 ease-invictus hover:-translate-y-[3px] hover:border-ink/15 hover:shadow-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
         className,
       )}
     >
       <div
-        className="relative aspect-[4/3] w-full overflow-hidden bg-ground"
-        onTouchStart={aoTocar}
-        onTouchEnd={aoSoltarToque}
+        className="relative aspect-[4/3] w-full touch-pan-y select-none overflow-hidden bg-ground"
+        onPointerDown={aoPressionar}
+        onPointerUp={aoSoltar}
       >
         <Foto
           src={imovel.imagens[indice]}
