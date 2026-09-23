@@ -91,8 +91,8 @@ class ImovelCreate(ImovelBase):
     # Preenchido automaticamente pelo backend a partir de quem está logado — ver routers/imoveis.py.
     corretor: str | None = None
     # Só no cadastro — sobrescreve o `imagens: list[str] = []` de ImovelBase (que também serve de
-    # saída/leitura, onde não dá pra exigir 3 fotos de imóveis antigos já cadastrados com menos).
-    imagens: list[str] = Field(min_length=3)
+    # saída/leitura, onde não dá pra exigir foto de imóveis antigos já cadastrados sem nenhuma).
+    imagens: list[str] = Field(min_length=1)
 
 
 class ImovelUpdate(BaseModel):

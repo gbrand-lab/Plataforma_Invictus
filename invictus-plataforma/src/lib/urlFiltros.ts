@@ -18,6 +18,9 @@ export function filtroFromSearchParams(sp: URLSearchParams): Filtro {
   const finalidade = sp.get('finalidade');
   const categoria = sp.get('categoria');
   const ordem = sp.get('ordem') as Ordenacao | null;
+  const naChave = sp.get('naChave') === '1';
+  // Na chave é pra quem quer entrar logo — sem ordenação escolhida na URL, mostra do mais barato pro mais caro.
+  const ordemPadrao = naChave ? 'menor' : 'recentes';
 
   return {
     ...FILTRO_VAZIO,
@@ -32,9 +35,9 @@ export function filtroFromSearchParams(sp: URLSearchParams): Filtro {
     precoMin: numero(sp.get('precoMin')),
     precoMax: numero(sp.get('precoMax')),
     areaMin: numero(sp.get('areaMin')),
-    naChave: sp.get('naChave') === '1',
+    naChave,
     q: sp.get('q') ?? '',
-    ordem: ordem && ORDENS.includes(ordem) ? ordem : 'recentes',
+    ordem: ordem && ORDENS.includes(ordem) ? ordem : ordemPadrao,
   };
 }
 

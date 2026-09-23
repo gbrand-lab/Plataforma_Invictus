@@ -142,8 +142,8 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
     e.preventDefault();
     setErro('');
 
-    if (form.imagens.length < 3) {
-      setErro('Envie pelo menos 3 fotos do imóvel.');
+    if (form.imagens.length < 1) {
+      setErro('Envie pelo menos 1 foto do imóvel.');
       return;
     }
 
@@ -514,7 +514,7 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
-              Fotos <span className="normal-case text-muted/80">(mínimo 3)</span>
+              Fotos <span className="normal-case text-muted/80">(mínimo 1)</span>
             </span>
             <ImageUploader value={form.imagens} onChange={(imagens) => campo('imagens', imagens)} />
           </div>

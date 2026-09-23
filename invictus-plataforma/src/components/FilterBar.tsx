@@ -9,12 +9,13 @@ import { selectCls, selectStyle } from './ui';
 export const CHIP =
   'inline-flex h-9 items-center rounded-lg border px-3 text-[13.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40';
 
-/** Só pra imóvel na planta: filtra pelo teto de preço a partir da renda que o comprador informa. */
-const FAIXAS_RENDA: { label: string; precoMax: number | '' }[] = [
-  { label: 'Até R$ 3.000', precoMax: 260000 },
-  { label: 'Até R$ 5.500', precoMax: 320000 },
-  { label: 'Até R$ 9.000', precoMax: 400000 },
-  { label: 'Acima de R$ 10.000', precoMax: '' },
+/** Filtra pelo teto de preço a partir da renda que o comprador informa — pedido do cliente pra valer também em "na chave". */
+const FAIXAS_RENDA: { label: string; precoMin: number | ''; precoMax: number | '' }[] = [
+  { label: 'Todos', precoMin: '', precoMax: '' },
+  { label: 'Até R$ 3.000', precoMin: '', precoMax: 260000 },
+  { label: 'Até R$ 5.500', precoMin: '', precoMax: 320000 },
+  { label: 'Até R$ 9.000', precoMin: '', precoMax: 400000 },
+  { label: 'Acima de R$ 10.000', precoMin: 400000, precoMax: '' },
 ];
 
 interface FilterBarProps {
@@ -102,7 +103,11 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
 
         <button
           type="button"
-          onClick={() => set({ naChave: !filtro.naChave })}
+          onClick={() => {
+            const ligar = !filtro.naChave;
+            // Na chave é pra quem quer entrar logo — mostrar do mais barato pro mais caro já de cara.
+            set(ligar ? { naChave: true, ordem: 'menor' } : { naChave: false });
+          }}
           aria-pressed={filtro.naChave}
           className={cx(
             CHIP,
@@ -131,6 +136,7 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
           <span className="tabular hidden whitespace-nowrap text-[13px] text-muted sm:block">
             {num(total)} imóveis
           </span>
+          <span className="hidden whitespace-nowrap text-[12.5px] font-medium text-ink2 sm:inline">Ordenar:</span>
           <select
             aria-label="Ordenar por"
             value={filtro.ordem}
@@ -147,7 +153,7 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
         </div>
       </div>
 
-      {filtro.finalidade === 'venda' && !filtro.naChave ? (
+      {filtro.finalidade === 'venda' ? (
         <div className="border-t border-line/70">
           <div className="mx-auto max-w-[1240px] px-5 pt-2.5 sm:px-7">
             <p className="text-[13px] font-medium text-ink">
@@ -160,12 +166,12 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
               <button
                 key={f.label}
                 type="button"
-                onClick={() => set({ precoMin: '', precoMax: f.precoMax })}
-                aria-pressed={filtro.precoMax === f.precoMax}
+                onClick={() => set({ precoMin: f.precoMin, precoMax: f.precoMax })}
+                aria-pressed={filtro.precoMin === f.precoMin && filtro.precoMax === f.precoMax}
                 className={cx(
                   CHIP,
                   'h-8',
-                  filtro.precoMax === f.precoMax
+                  filtro.precoMin === f.precoMin && filtro.precoMax === f.precoMax
                     ? 'border-brand bg-wash text-brandDeep'
                     : 'border-line bg-white text-ink2 hover:border-ink/30',
                 )}
