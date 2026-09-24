@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     resend_api_key: str | None = None
     resend_remetente_email: str | None = None
     resend_remetente_nome: str = "Invictus Imóveis"
-    frontend_base_url: str = "https://invictusimoveis.com.br"
+    frontend_base_url: str = "https://www.imobiliariainvictus.com.br"
 
     model_config = SettingsConfigDict(env_file=_ENV_FILE, env_file_encoding="utf-8")
 

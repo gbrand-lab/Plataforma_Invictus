@@ -20,7 +20,7 @@ export const CONFIG = {
    */
   corretorResponsavel: 'Islas',
   atendimento: 'Seg a sex, 8h às 18h · Sáb, 8h às 12h',
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://invictusimoveis.com.br',
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.imobiliariainvictus.com.br',
 } as const;
 
 export function whatsappUrl(mensagem: string): string {
