@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     cloudinary_api_key: str | None = None
     cloudinary_api_secret: str | None = None
 
+    # Aviso automático de imóvel novo pros leads cadastrados (ver app/email.py).
+    # Sem essas 2 variáveis preenchidas, o envio é pulado silenciosamente.
+    resend_api_key: str | None = None
+    resend_remetente_email: str | None = None
+    resend_remetente_nome: str = "Invictus Imóveis"
+    frontend_base_url: str = "https://invictusimoveis.com.br"
+
     model_config = SettingsConfigDict(env_file=_ENV_FILE, env_file_encoding="utf-8")
 
     @field_validator("jwt_secret")
@@ -39,6 +46,10 @@ class Settings(BaseSettings):
     @property
     def cloudinary_configurado(self) -> bool:
         return bool(self.cloudinary_cloud_name and self.cloudinary_api_key and self.cloudinary_api_secret)
+
+    @property
+    def resend_configurado(self) -> bool:
+        return bool(self.resend_api_key and self.resend_remetente_email)
 
 
 settings = Settings()

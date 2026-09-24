@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from ..configuracao import obter_configuracao
 from ..database import get_db
 from ..dependencies import get_current_admin, get_current_user
+from ..email import enviar_aviso_novo_imovel
 from ..models import Imovel, Usuario
 from ..schemas import ImovelCreate, ImovelOut, ImovelPublicoOut, ImovelUpdate
 from ..utils import gerar_ref, slugify
@@ -20,6 +21,18 @@ def _escapar_like(termo: str) -> str:
 def _serializar_publico(imovel: Imovel) -> ImovelPublicoOut:
     """Uso público — nunca inclui contato/corretor (ver ImovelPublicoOut); localização sempre exata."""
     return ImovelPublicoOut.model_validate(imovel)
+
+
+def _dados_para_email(imovel: Imovel) -> dict:
+    """Snapshot simples (não o objeto ORM) para o aviso de imóvel novo, disparado em background."""
+    return {
+        "titulo": imovel.titulo,
+        "slug": imovel.slug,
+        "finalidade": imovel.finalidade,
+        "cidade": imovel.cidade,
+        "bairro": imovel.bairro,
+        "preco": imovel.preco,
+    }
 
 
 # ---------- Público ----------
@@ -134,6 +147,7 @@ def obter_por_id(imovel_uuid: str, db: Session = Depends(get_db), usuario: Usuar
 @router.post("/admin", response_model=ImovelOut, status_code=status.HTTP_201_CREATED)
 def criar_imovel(
     payload: ImovelCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_current_user),
 ):
@@ -164,6 +178,10 @@ def criar_imovel(
     db.add(imovel)
     db.commit()
     db.refresh(imovel)
+
+    if imovel.status == "published":
+        background_tasks.add_task(enviar_aviso_novo_imovel, _dados_para_email(imovel))
+
     return imovel
 
 
@@ -171,6 +189,7 @@ def criar_imovel(
 def atualizar_imovel(
     imovel_uuid: str,
     payload: ImovelUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_current_user),
 ):
@@ -188,11 +207,17 @@ def atualizar_imovel(
         dados.pop("status", None)
         dados.pop("corretor", None)
 
+    status_anterior = imovel.status
     for campo, valor in dados.items():
         setattr(imovel, campo, valor)
 
     db.commit()
     db.refresh(imovel)
+
+    # Só avisa na transição pra published — não a cada edição de um imóvel já publicado.
+    if dados.get("status") == "published" and status_anterior != "published":
+        background_tasks.add_task(enviar_aviso_novo_imovel, _dados_para_email(imovel))
+
     return imovel
 
 

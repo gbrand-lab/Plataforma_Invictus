@@ -45,6 +45,13 @@ export const metadata: Metadata = {
     siteName: CONFIG.nome,
     title: 'Invictus — Imóveis à venda e para alugar em São Luís/MA',
     description: 'Encontre imóveis para comprar, alugar ou investir de forma simples e segura.',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: CONFIG.nome }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Invictus — Imóveis à venda e para alugar em São Luís/MA',
+    description: 'Encontre imóveis para comprar, alugar ou investir de forma simples e segura.',
+    images: ['/og-image.jpg'],
   },
   robots: { index: true, follow: true },
 };
