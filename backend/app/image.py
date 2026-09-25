@@ -21,6 +21,15 @@ except ImportError:  # ambiente sem pillow-heif — HEIC vira erro de leitura, r
 LADO_MAX = 2400
 QUALIDADE_JPEG = 85
 
+# Teto real do plano Cloudinary em uso — acima disso o upload é recusado.
+LIMITE_CLOUDINARY_BYTES = 20 * 1024 * 1024
+
+
+def _codificar_jpeg(imagem: Image.Image, qualidade: int) -> bytes:
+    buffer = io.BytesIO()
+    imagem.save(buffer, format="JPEG", quality=qualidade, optimize=True)
+    return buffer.getvalue()
+
 
 def preparar_imagem(conteudo: bytes) -> bytes:
     """Recebe os bytes de qualquer formato suportado (incl. HEIC) e devolve JPEG pronto pra guardar."""
@@ -33,6 +42,15 @@ def preparar_imagem(conteudo: bytes) -> bytes:
     if imagem.width > LADO_MAX or imagem.height > LADO_MAX:
         imagem.thumbnail((LADO_MAX, LADO_MAX), Image.LANCZOS)
 
-    saida = io.BytesIO()
-    imagem.save(saida, format="JPEG", quality=QUALIDADE_JPEG, optimize=True)
-    return saida.getvalue()
+    saida = _codificar_jpeg(imagem, QUALIDADE_JPEG)
+
+    # Praticamente nunca acontece (JPEG nesse tamanho já fica na casa de 1-2MB),
+    # mas por segurança: se ainda assim passar do teto do Cloudinary, aperta mais.
+    for qualidade, lado in ((70, 1800), (60, 1400)):
+        if len(saida) <= LIMITE_CLOUDINARY_BYTES:
+            break
+        menor = imagem.copy()
+        menor.thumbnail((lado, lado), Image.LANCZOS)
+        saida = _codificar_jpeg(menor, qualidade)
+
+    return saida

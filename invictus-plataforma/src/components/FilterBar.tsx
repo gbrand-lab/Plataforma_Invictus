@@ -1,6 +1,7 @@
 'use client';
 
 import { SlidersHorizontal } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { BAIRROS, CATEGORIAS, CIDADES, ORDENACOES } from '@/lib/data';
 import { cx, num } from '@/lib/format';
 import type { Categoria, Filtro, Finalidade, Ordenacao } from '@/lib/types';
@@ -29,6 +30,23 @@ interface FilterBarProps {
 
 /** Barra fixa da listagem: os filtros de maior uso ficam a um clique. */
 export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterBarProps) {
+  const [rendaVisivel, setRendaVisivel] = useState(true);
+  const ultimoScroll = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const atual = window.scrollY;
+      if (atual > ultimoScroll.current && atual > 60) {
+        setRendaVisivel(false);
+      } else if (atual < ultimoScroll.current) {
+        setRendaVisivel(true);
+      }
+      ultimoScroll.current = atual;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const finalidades: [Finalidade | '', string][] = [
     ['', 'Todos'],
     ['venda', 'Comprar'],
@@ -154,7 +172,12 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
       </div>
 
       {filtro.finalidade === 'venda' ? (
-        <div className="border-t border-line/70">
+        <div
+          className={cx(
+            'overflow-hidden border-t border-line/70 transition-all duration-300 ease-in-out',
+            rendaVisivel ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0',
+          )}
+        >
           <div className="mx-auto max-w-[1240px] px-5 pt-2.5 sm:px-7">
             <p className="text-[13px] font-medium text-ink">
               Vamos achar o imóvel que se encaixa na sua realidade.

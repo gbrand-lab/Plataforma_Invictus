@@ -20,8 +20,27 @@ interface RespostaUpload {
   detail?: unknown;
 }
 
-async function enviarLote(url: string, formData: FormData): Promise<RespostaUpload> {
-  const resposta = await fetch(url, { method: 'POST', body: formData });
+/**
+ * Vai direto do navegador pro backend (não passa pelo proxy do Next.js — a Vercel
+ * limita bem o tamanho do corpo das suas próprias functions, o que rejeitava foto
+ * de celular antes mesmo de chegar no backend). Pega um token válido pra sessão
+ * e manda o lote num único POST direto ao backend.
+ */
+async function enviarLote(formData: FormData): Promise<RespostaUpload> {
+  const tokenResp = await fetch('/api/uploads/token');
+  const tokenDados = await tokenResp.json().catch(() => ({}));
+  if (!tokenResp.ok || !tokenDados.token) {
+    throw new Error('Sua sessão expirou. Atualize a página e faça login de novo.');
+  }
+
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  if (!backendUrl) throw new Error('Upload de foto não configurado (NEXT_PUBLIC_BACKEND_URL ausente).');
+
+  const resposta = await fetch(`${backendUrl}/uploads/imagens`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tokenDados.token}` },
+    body: formData,
+  });
   const dados = await resposta.json().catch(() => ({}));
   if (!resposta.ok) throw new Error(typeof dados.detail === 'string' ? dados.detail : 'Não foi possível enviar.');
   return dados;
@@ -49,7 +68,7 @@ export function ImageUploader({ value, onChange, className = '' }: ImageUploader
     try {
       const formData = new FormData();
       imagens.forEach((arquivo) => formData.append('arquivos', arquivo));
-      const dados = await enviarLote('/api/uploads', formData);
+      const dados = await enviarLote(formData);
       onChange([...value, ...(dados.urls ?? [])]);
 
       if (dados.erros?.length) {

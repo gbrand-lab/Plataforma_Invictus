@@ -50,7 +50,7 @@ export function VideoUploader({ value, onChange, className = '' }: VideoUploader
 
       // Pega um token válido pro upload e manda o arquivo direto pro backend — não passa pelo
       // proxy do Next.js, cuja plataforma (Vercel) limita bem o tamanho do corpo das requisições.
-      const tokenResp = await fetch('/api/uploads/video-token');
+      const tokenResp = await fetch('/api/uploads/token');
       const tokenDados = await tokenResp.json().catch(() => ({}));
       if (!tokenResp.ok || !tokenDados.token) {
         setErro('Sua sessão expirou. Atualize a página e faça login de novo.');

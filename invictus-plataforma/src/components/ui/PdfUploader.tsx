@@ -26,9 +26,29 @@ export function PdfUploader({ value, onChange, className = '' }: PdfUploaderProp
     setErro('');
     setEnviando(true);
     try {
+      // Vai direto do navegador pro backend (não passa pelo proxy do Next.js — a Vercel
+      // limita bem o tamanho do corpo das suas próprias functions, o que rejeitava um
+      // PDF de várias páginas antes mesmo de chegar no backend).
+      const tokenResp = await fetch('/api/uploads/token');
+      const tokenDados = await tokenResp.json().catch(() => ({}));
+      if (!tokenResp.ok || !tokenDados.token) {
+        setErro('Sua sessão expirou. Atualize a página e faça login de novo.');
+        return;
+      }
+
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      if (!backendUrl) {
+        setErro('Upload de PDF não configurado (NEXT_PUBLIC_BACKEND_URL ausente).');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('arquivo', arquivo);
-      const resposta = await fetch('/api/uploads/pdf', { method: 'POST', body: formData });
+      const resposta = await fetch(`${backendUrl}/uploads/pdf`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${tokenDados.token}` },
+        body: formData,
+      });
       const dados = await resposta.json().catch(() => ({}));
       if (!resposta.ok) throw new Error(typeof dados.detail === 'string' ? dados.detail : 'Não foi possível enviar.');
       onChange([...value, ...(dados.urls ?? [])]);
