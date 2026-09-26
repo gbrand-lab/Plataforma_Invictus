@@ -26,9 +26,13 @@ export const BAIRROS: string[] = [
   'Olho d’Água',
   'Cohama',
   'Cohafuma',
+  'Cohatrac',
   'Araçagy',
   'Turu',
   'São Francisco',
+  'Jardim Eldourado',
+  'Vila Piçarreira',
+  'Mário Andreazza',
 ];
 
 export const CARACTERISTICAS: string[] = [
