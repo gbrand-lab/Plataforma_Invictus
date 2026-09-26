@@ -118,7 +118,8 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
       }
       setForm((atual) => ({
         ...atual,
-        bairro: dados.bairro || atual.bairro,
+        bairro:
+          BAIRROS.find((b) => b.toLowerCase() === String(dados.bairro).toLowerCase()) ?? atual.bairro,
         endereco: dados.logradouro || atual.endereco,
         cidade: CIDADES.find((c) => c.toLowerCase() === String(dados.localidade).toLowerCase()) ?? atual.cidade,
       }));
@@ -356,18 +357,22 @@ export function ImovelForm({ imovel, mostrarStatus = true, aoSalvar = '/admin' }
             </select>
           </Campo>
           <Campo label="Bairro">
-            <input
+            <select
               required
-              list="bairros"
-              className={inputCls}
+              className={selectCls}
+              style={selectStyle}
               value={form.bairro}
               onChange={(e) => campo('bairro', e.target.value)}
-            />
-            <datalist id="bairros">
+            >
+              <option value="" disabled>
+                Selecione
+              </option>
               {BAIRROS.map((b) => (
-                <option key={b} value={b} />
+                <option key={b} value={b}>
+                  {b}
+                </option>
               ))}
-            </datalist>
+            </select>
           </Campo>
           <Campo label="Endereço">
             <input
