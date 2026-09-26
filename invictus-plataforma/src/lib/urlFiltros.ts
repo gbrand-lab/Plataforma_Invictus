@@ -55,7 +55,8 @@ export function searchParamsFromFiltro(f: Filtro): URLSearchParams {
   if (f.areaMin !== '') sp.set('areaMin', String(f.areaMin));
   if (f.naChave) sp.set('naChave', '1');
   if (f.q) sp.set('q', f.q);
-  if (f.ordem !== 'recentes') sp.set('ordem', f.ordem);
+  // Só omite a ordem quando é o padrão do modo atual — senão "Mais recentes" em Na chave voltaria pra "menor" no parse.
+  if (f.ordem !== (f.naChave ? 'menor' : 'recentes')) sp.set('ordem', f.ordem);
   return sp;
 }
 

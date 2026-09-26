@@ -34,14 +34,24 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
   const ultimoScroll = useRef(0);
 
   useEffect(() => {
+    // Abrir/fechar a faixa muda a altura da página, e o navegador ajusta o scroll sozinho
+    // (scroll anchoring) — sem trava, isso vira "rolou pra cima" e a faixa entra em loop piscando.
+    let travadoAte = 0;
+    ultimoScroll.current = window.scrollY;
     const handleScroll = () => {
       const atual = window.scrollY;
-      if (atual > ultimoScroll.current && atual > 60) {
-        setRendaVisivel(false);
-      } else if (atual < ultimoScroll.current) {
-        setRendaVisivel(true);
+      if (performance.now() < travadoAte) {
+        ultimoScroll.current = atual;
+        return;
       }
+      const delta = atual - ultimoScroll.current;
+      if (Math.abs(delta) < 12) return;
+      const mostrar = delta < 0 || atual < 80;
       ultimoScroll.current = atual;
+      setRendaVisivel((antes) => {
+        if (antes !== mostrar) travadoAte = performance.now() + 400;
+        return mostrar;
+      });
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -124,7 +134,7 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
           onClick={() => {
             const ligar = !filtro.naChave;
             // Na chave é pra quem quer entrar logo — mostrar do mais barato pro mais caro já de cara.
-            set(ligar ? { naChave: true, ordem: 'menor' } : { naChave: false });
+            set(ligar ? { naChave: true, ordem: 'menor' } : { naChave: false, ordem: 'recentes' });
           }}
           aria-pressed={filtro.naChave}
           className={cx(
@@ -171,7 +181,7 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
         </div>
       </div>
 
-      {filtro.finalidade === 'venda' ? (
+      {filtro.finalidade === 'venda' || filtro.naChave ? (
         <div
           className={cx(
             'grid border-t border-line/70 transition-[grid-template-rows,opacity] duration-300 ease-in-out',

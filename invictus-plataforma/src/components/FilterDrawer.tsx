@@ -220,7 +220,9 @@ export function FilterDrawer({ aberto, onFechar, filtro, set, onLimpar, total }:
               id="fd-chave"
               type="checkbox"
               checked={filtro.naChave}
-              onChange={(e) => set({ naChave: e.target.checked })}
+              onChange={(e) =>
+                set({ naChave: e.target.checked, ordem: e.target.checked ? 'menor' : 'recentes' })
+              }
               className="mt-0.5 h-4 w-4 accent-[#ED6A1F]"
             />
             <span>
