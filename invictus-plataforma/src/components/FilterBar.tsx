@@ -174,34 +174,36 @@ export function FilterBar({ filtro, set, onAbrirDrawer, extras, total }: FilterB
       {filtro.finalidade === 'venda' ? (
         <div
           className={cx(
-            'overflow-hidden border-t border-line/70 transition-all duration-300 ease-in-out',
-            rendaVisivel ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0',
+            'grid border-t border-line/70 transition-[grid-template-rows,opacity] duration-300 ease-in-out',
+            rendaVisivel ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
           )}
         >
-          <div className="mx-auto max-w-[1240px] px-5 pt-2.5 sm:px-7">
-            <p className="text-[13px] font-medium text-ink">
-              Vamos achar o imóvel que se encaixa na sua realidade.
-            </p>
-          </div>
-          <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-2 px-5 pb-2.5 pt-1.5 sm:px-7">
-            <span className="text-[12.5px] font-medium text-ink2">Renda mensal:</span>
-            {FAIXAS_RENDA.map((f) => (
-              <button
-                key={f.label}
-                type="button"
-                onClick={() => set({ precoMin: f.precoMin, precoMax: f.precoMax })}
-                aria-pressed={filtro.precoMin === f.precoMin && filtro.precoMax === f.precoMax}
-                className={cx(
-                  CHIP,
-                  'h-8',
-                  filtro.precoMin === f.precoMin && filtro.precoMax === f.precoMax
-                    ? 'border-brand bg-wash text-brandDeep'
-                    : 'border-line bg-white text-ink2 hover:border-ink/30',
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
+          <div className="overflow-hidden">
+            <div className="mx-auto max-w-[1240px] px-5 pt-2.5 sm:px-7">
+              <p className="text-[13px] font-medium text-ink">
+                Vamos achar o imóvel que se encaixa na sua realidade.
+              </p>
+            </div>
+            <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-2 px-5 pb-2.5 pt-1.5 sm:px-7">
+              <span className="text-[12.5px] font-medium text-ink2">Renda mensal:</span>
+              {FAIXAS_RENDA.map((f) => (
+                <button
+                  key={f.label}
+                  type="button"
+                  onClick={() => set({ precoMin: f.precoMin, precoMax: f.precoMax })}
+                  aria-pressed={filtro.precoMin === f.precoMin && filtro.precoMax === f.precoMax}
+                  className={cx(
+                    CHIP,
+                    'h-8',
+                    filtro.precoMin === f.precoMin && filtro.precoMax === f.precoMax
+                      ? 'border-brand bg-wash text-brandDeep'
+                      : 'border-line bg-white text-ink2 hover:border-ink/30',
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       ) : null}
